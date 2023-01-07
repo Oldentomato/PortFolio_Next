@@ -24,14 +24,12 @@
   },
   "devDependencies": {
     "tailwindcss": "^3.2.4"
-<<<<<<< HEAD
+
   },
   "browserslist": [
     "last 2 versions",
     "IE 10",
     "firefox > 20"
   ]
-=======
-  }
->>>>>>> 326be14c30291fc5012133fa55e3c922fe63cc79
+
 }
