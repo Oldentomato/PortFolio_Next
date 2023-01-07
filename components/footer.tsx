@@ -3,6 +3,7 @@ import { AppLayoutProps } from "./types";
 export default function Footer({ children }: AppLayoutProps) {
   return (
     <>
+<<<<<<< HEAD
       <footer className="text-gray-600 body-font">
         <div className="bg-gray-100">
           <div className="container px-5 py-6 mx-auto flex items-center sm:flex-row flex-col">
@@ -80,6 +81,9 @@ export default function Footer({ children }: AppLayoutProps) {
           </div>
         </div>
       </footer>
+=======
+      <h1>footer</h1>
+>>>>>>> 326be14c30291fc5012133fa55e3c922fe63cc79
     </>
   );
 }

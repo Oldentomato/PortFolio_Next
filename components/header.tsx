@@ -3,6 +3,7 @@ import { AppLayoutProps } from "./types";
 export default function Header({ children }: AppLayoutProps) {
   return (
     <>
+<<<<<<< HEAD
       <header className="text-gray-600 body-font">
         <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
           <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
@@ -41,6 +42,9 @@ export default function Header({ children }: AppLayoutProps) {
           </button>
         </div>
       </header>
+=======
+      <h1>header</h1>
+>>>>>>> 326be14c30291fc5012133fa55e3c922fe63cc79
     </>
   );
 }
