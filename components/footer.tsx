@@ -81,8 +81,6 @@ export default function Footer({ children }: AddLayoutProps) {
         </div>
       </footer>
 
-      <h1>footer</h1>
-
     </>
   );
 }

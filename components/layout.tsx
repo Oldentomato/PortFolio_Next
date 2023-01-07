@@ -12,11 +12,6 @@ export default function Layout({ children }: AddLayoutProps) {
       <div>{children}</div>
       <Footer />
 
-        <Header/>
-        <h1>layout</h1>
-        <div>{children}</div>
-        <Footer/>
-
     </>
   );
 }
