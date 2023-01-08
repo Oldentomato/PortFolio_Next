@@ -1,18 +1,22 @@
-import React from "react";
+import React,{useEffect} from "react";
 
-import Lottie from "react-lottie-player";
 // Alternatively:
 // import Lottie from 'react-lottie-player/dist/LottiePlayerLight'
 
-import lottieJson from "../../public/animation.json";
 
 export default function Animation() {
+  useEffect(() => {
+    import('@lottiefiles/lottie-player');
+  });
+
   return (
-    <Lottie
-      loop
-      animationData={lottieJson}
-      play
-      style={{ width: 150, height: 150 }}
-    />
+    <lottie-player
+    id="firstLottie"
+    autoplay
+    loop
+    mode="normal"
+    src="https://assets9.lottiefiles.com/packages/lf20_osrbi94c.json"
+  />
+
   );
 }
