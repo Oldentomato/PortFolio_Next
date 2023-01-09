@@ -25,7 +25,7 @@ export default function Header({ children }: AddLayoutProps) {
           <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
             <Link href="/" className="mr-5 hover:text-gray-900">Home</Link>
             <Link className="mr-5 hover:text-gray-900" href="/projects" >Project</Link>
-            <Link className="mr-5 hover:text-gray-900" href="/" >Blog</Link>
+            <Link className="mr-5 hover:text-gray-900" href="/blog" >Blog</Link>
             <Link href="/" className="mr-5 hover:text-gray-900">Contact</Link>
           </nav>
             <DarkModeToggleButton/>
