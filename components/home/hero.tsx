@@ -8,7 +8,7 @@ export default function Hero() {
         <h1 className="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">
           Hi!
           <br className="hidden lg:inline-block" />
-          I'm JoWooSung
+          I&apos;m JoWooSung
         </h1>
         <p className="mb-8 leading-relaxed">
           Copper mug try-hard pitchfork pour-over freegan heirloom neutra air
