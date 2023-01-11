@@ -11,6 +11,23 @@ import ProjectItem from "../components/projects/project_item";
 
 export default function Projects({projects}:any) {
 
+  // gsap.fromTo(".Activities",
+  // {
+  //   opacity: 0,
+  //   xPercent: 100
+  // },
+  // {
+  //   opacity: 1,
+  //   xPercent: 0,
+  //   ease: 'power1.inOut',
+  //   scrollTrigger: {
+  //       trigger: '.Activities',
+  //       start: 'top bottom',
+  //       end: '+=600',
+  //       scrub: true,
+  //   },
+  // })
+
   return (
       <Layout>
         <div className="flex flex-col items-center justify-center min-h-screen px-5 py-24 mb-10 px-6">

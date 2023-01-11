@@ -6,7 +6,7 @@ import Skill from "../components/home/section_2/skill"
 import AnimationSkill from "../components/home/section_2/animation_skill"
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/dist/ScrollTrigger'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect} from 'react'
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,7 +84,7 @@ export default function Home() {
               scrollTrigger: {
                   trigger: '.Activities',
                   start: 'top bottom',
-                  end: '+=600',
+                  end: '+=200',
                   scrub: true,
               },
             })
@@ -117,10 +117,10 @@ export default function Home() {
           </section>
 
           <section className="flex items-center h-[100vh] relative justify-center">
-            <div className="skill">
+            <div className="skill opacity-0">
               <Skill />
             </div>
-            <div className="skillanimation">
+            <div className="skillanimation opacity-0">
               <AnimationSkill />
             </div>
 
