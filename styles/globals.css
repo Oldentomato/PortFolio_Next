@@ -17,6 +17,11 @@
     transition duration-100
 }
 
+.tagstyle{
+    @apply text-slate-900 dark:text-white
+    transition duration-100
+}
+
 
 .project-card{
     @apply flex flex-col m-3 rounded-xl w-full
