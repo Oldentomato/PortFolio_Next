@@ -11,7 +11,7 @@ export default function Hero() {
           I&apos;m JoWooSung
         </h1>
         <p className="mb-8 leading-relaxed">
-        I'm an amateur developer who is passionate about everything. 
+        I&apos;m an amateur developer who is passionate about everything. 
         I study every day to become an MLOps developer. 
         I studied deep learning and DevOps, as well as front-end and back-end. 
         Also, game development using Unity is possible.
