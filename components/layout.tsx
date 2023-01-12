@@ -5,7 +5,7 @@ import Footer from "./footer";
 
 
 
-export default function Layout({ children }: any) {
+export default function Layout({ children }: AddLayoutProps) {
   return (
     <div className="bg-primary">
       <Header />

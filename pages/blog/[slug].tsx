@@ -5,10 +5,16 @@ import Container from "../../components/Container";
 
 const Post = ({ post }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const MDXComponent = useMDXComponent(post.body.code);
+
+  const tags = post.tag.map((i)=>(<p className="px-2 rounded-md border-indigo-500 border-2 bg-cyan-400">{i}</p>))
+
   return (
     <Container>
-      <div className="mt-10 prose">
+      <div className="mt-10 prose mb-20">
         <h1 className="text-sky-700">{post.title}</h1>
+        <div className="flex space-x-5 ">
+          {tags}
+        </div>
         <MDXComponent />
       </div>
     </Container>
@@ -32,3 +38,4 @@ export const getStaticProps = async ({ params }) => {
 };
 
 export default Post;
+

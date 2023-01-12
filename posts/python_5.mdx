@@ -1,37 +1,53 @@
 ---
 title: contour에 대하여
 date: 2022-06-26
-description: 파이썬, 영상처리, 딥러닝
+description: 딥러닝에 필요한 이미지 노이즈 제거법
+tag: [파이썬, 영상처리, 딥러닝]
 ---
 
-- contour란 등고선을 의미한다. 등고선은 지형의 높이가 같은 영역을 하나의 선으로 표시한 것이다.  
+contour란 등고선을 의미한다. 등고선은 지형의 높이가 같은 영역을 하나의 선으로 표시한 것이다.  
 ```python
 #함수의 쓰임법
-dst, contours, hierarchy = cv2.findContour(src,mode,method,coutours,hierarchy,offset)
+dst, contours, hierarchy = cv2.findContour(src,mode,method,coutours,hierarchy,offset)  
+```  
 
-매개변수 | 의미 | 추가내용
----|:---:|---:
-`src` | 입력영상, 검정과 흰색으로 구성된 바이너리 이미지 | . 
-`mode`| 컨투어 제공방식 | cv2.RETR_EXTERNAL: 가장 바깥쪽 라인만 생성,  
-cv2. RETR_LIST: 모든 라인을 계층없이 생성,  
-cv2.RET_CCOMP: 모든 라인을 2계층으로 생성, 
-cv2.RETR_TREE: 모든 라인의 계층 정보를 트리 구조로 생성  
-`method`| 근사값 방식 | cv2.CHAIN_APPROX_NONE: 근사값 없이 모든 좌표 제공,
-cv2.CHAIN_APPROX_SIMPLE: 컨투어 꼭짓점 좌표만 제공,
-cv2.CHAIN_APPROX_TC89_L1: Teh-Chin 알고리즘으로 좌표 개수 축소,
-cv2.CHAIN_APPROX_TC89_KCOS: Teh-Chin 알고리즘으로 좌표개수 축소  
-`contours(optional)`| 검출한 컨투어 좌표 | list type)
-`hierarchy(optional)`| 컨투어 계층 정보 | Next, Prev, FirstChild, Parent, -1[해당없음] 
-`offset(optional)`| ROI 등으로 인해 이동한 컨투어 좌표의 오프셋 | . 
+
+- `src`
+    - 입력영상, 검정과 흰색으로 구성된 바이너리 이미지
+- `mode`
+    - 컨투어 제공방식
+        - cv2.RETR_EXTERNAL: 가장 바깥쪽 라인만 생성,  
+        - cv2. RETR_LIST: 모든 라인을 계층없이 생성,  
+        - cv2.RET_CCOMP: 모든 라인을 2계층으로 생성, 
+        - cv2.RETR_TREE: 모든 라인의 계층 정보를 트리 구조로 생성  
+- `method`
+    - 근사값 방식 
+        - cv2.CHAIN_APPROX_NONE: 근사값 없이 모든 좌표 제공,
+        - cv2.CHAIN_APPROX_SIMPLE: 컨투어 꼭짓점 좌표만 제공,
+        - cv2.CHAIN_APPROX_TC89_L1: Teh-Chin 알고리즘으로 좌표 개수 축소,
+        - cv2.CHAIN_APPROX_TC89_KCOS: Teh-Chin 알고리즘으로 좌표개수 축소  
+- `contours(optional)`
+    - 검출한 컨투어 좌표 (list type)
+- `hierarchy(optional)`
+    - 컨투어 계층 정보 
+    - Next, Prev, FirstChild, Parent, -1[해당없음] 
+- `offset(optional)`
+    - ROI 등으로 인해 이동한 컨투어 좌표의 오프셋
 
 **추가로 위의 함수를 이용한 그리기 함수**  
 ```python
 cv2.drawContours(img, contours, contourIdx, color, thickness)  
+```
 
-매개변수 | 의미 
----|:---:
-`img`| 입력영상
-`contours`| 그림 그릴 컨투어 배열 (cv2.findContours()함수의 변환결과를 전달해주면 됨)  
-`contourIdx`| 그림 그릴 컨투어 인덱스, (-1: 모든 컨투어 표시)  
-`color`| 색상 값  
-`thickness`| 선두께, (0: 채우기)  
+
+- `img`
+    - 입력영상
+- `contours`
+    - 그림 그릴 컨투어 배열 (cv2.findContours()함수의 변환결과를 전달해주면 됨)  
+- `contourIdx`
+    - 그림 그릴 컨투어 인덱스, (-1: 모든 컨투어 표시)  
+- `color`
+     - 색상 값  
+- `thickness`
+    - 선두께 (0: 채우기)  
+

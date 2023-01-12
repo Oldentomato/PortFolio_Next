@@ -12,14 +12,14 @@ const Container = (props) => {
                     <title>{metadata.title}</title>
                 </Head>
             </header>
-            <div className="w-full flex flex-col items-center p-3">
+            <div className="w-full flex flex-col items-center">
                 <div className="flex flex-row items-center">
                     <span className="mx-2 font-extralight text-4xl">
                         {metadata.title}
                     </span>
                 </div>
 
-                <main className="w-full max-w-3xl">{props.children}</main>
+                <main className="w-full max-w-2xl">{props.children}</main>
             </div>
             </Layout>
         </>
