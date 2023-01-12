@@ -6,7 +6,7 @@ import Container from "../../components/Container";
 const Post = ({ post }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const MDXComponent = useMDXComponent(post.body.code);
 
-  const tags = post.tag.map((i)=>(<p className="px-2 rounded-md border-indigo-500 border-2 bg-cyan-400">{i}</p>))
+  const tags = post.tag.map((tag, index)=>(<p key={index} className="px-2 rounded-md border-indigo-500 border-2 bg-cyan-400">{tag}</p>))
 
   return (
     <Container>
