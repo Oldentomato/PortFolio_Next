@@ -1,0 +1,129 @@
+---
+title: 히스토그램 평활화
+date: 2022-04-03
+description: 파이썬, 과제, 영상처리
+---
+
+- 학교에서 영상처리 과목시간에 히스토그램 평활화 과제가 나왔다.
+흑백으로 하면 기본점수이고 컬러로 하면 추가점수가 있다고 해서 컬러로 구현했다.  
+방법은 내가 알기로는 크게 두가지인데, hsv로 변환하여 v 값을 평활화 한다음, 다시 rgb로 변환시키는 방법이랑
+ycbcr로 변환한 다음 y값을 평활화하고 다시 rgb로 변환하는 방법이다.  
+나는 ycbcr변환 방법을 채택했다.  
+
+```python
+def HistoEqual(m_image):
+    k = 0
+    Sum = 0
+    total_pixels = 0
+    hist = list(0 for i in range(256))
+    sum_of_hist = list(0 for i in range(256))
+    for z in range(0, 256): #초기화 단계
+        hist[z] = 0
+        sum_of_hist[z] = 0
+    
+    for i in range(0,256): 
+        for j in range(0,256):
+            k = int(m_image[i][j])
+            hist[k] = hist[k] + 1
+    for i in range(0,256):
+        Sum = Sum + hist[i]
+        sum_of_hist[i] = Sum
+
+    total_pixels = 256 * 256
+
+    for i in range(0,256):
+        for j in range(0,256):
+            k = int(m_image[i][j])
+            m_image[i][j] = sum_of_hist[k]*(255.0/total_pixels)
+            #sum_of_hist 누적분포함수 * 255/total_pixels 최대 명암도
+    return m_image
+
+- 이 코드가 평활하 하는 코드이고, 한 채널의 이미지만 연산이 가능하다. 그러기에 y값만 넣을 수 있다. 
+변환 코드는 다음과 같다.  
+
+```python
+def rgb2ycbcr(img):
+    height, width, channel = img.shape
+    b = img[...,0]
+    g = img[...,1]
+    r = img[...,2]
+
+    y = np.zeros((height, width), dtype=np.float)
+    cr = np.zeros((height,width),dtype=np.float)
+    cb = np.zeros((height,width), dtype=np.float)
+    for i in range(height):
+        for j in range(width):
+            y[i][j] = 0.299 * r[i][j] + 0.587 * g[i][j] + 0.114 * b[i][j]
+            cr[i][j] = (r[i][j] - y[i][j]) * 0.713 + 128
+            cb[i][j] = (b[i][j] - y[i][j]) * 0.564 + 128
+    return y.astype(np.uint8),cr.astype(np.uint8),cb.astype(np.uint8)
+
+def ycbcr2rgb(img):
+    xform = np.array([[1,0,1.402],[1,-0.34414, -.71414],[1,1.772,0]])
+    rgb = img.astype(np.float)
+    rgb[:,:,[1,2]] -= 128
+    rgb = rgb.dot(matrixMult(xform))
+
+
+    np.putmask(rgb,rgb>255,255)
+    np.putmask(rgb,rgb<0,0)
+    return np.uint8(rgb)
+
+
+
+def matrixMult(A): # 전치행렬
+    row = len(A)
+    col = len(A[0])
+    B=[[0 for row in range(row)] for col in range(col)]
+
+    for i in range(row):
+        for j in range(col):
+            B[j][i]=A[i][j]
+    return B
+
+- 교수님이 웬만하면 라이브러리를 사용하지 말라고 하셨기 때문에 cv2.cvtColor를 사용하지 않아야한다. T(전치행렬)은 사용하지 않았지만 dot함수는 도저히 손으로 짤 수없어서 포기했다. 
+dot함수는 matmul과 같이 행렬곱 함수이지만 3차원연산까지 지원이 된다고 한다.  
+마지막으로 이미지를 불러오고 함수호출부와 그래프 출력 코드이다.  
+```python
+img = cv2.imread("./image.jpeg", cv2.IMREAD_UNCHANGED)
+r = img[...,0]
+g = img[...,1]
+b = img[...,2]
+
+y,cr,cb = rgb2ycbcr(img)
+
+new_y = HistoEqual(y)
+ycrcb = (np.dstack((new_y, cr, cb))).astype(np.uint8)
+
+new_rgb = ycbcr2rgb(ycrcb)
+
+nr = new_rgb[...,0]
+ng = new_rgb[...,1]
+nb = new_rgb[...,2]
+
+f,axes = plt.subplots(2,3)
+f.set_size_inches((10,5))
+plt.subplots_adjust(hspace=0.5)
+
+axes[0,0].hist(r)
+axes[0,0].set_title('Before Red')
+axes[0,1].hist(g)
+axes[0,1].set_title('Before Green')
+axes[0,2].hist(b)
+axes[0,2].set_title('Before Blue')
+
+axes[1,0].hist(nr)
+axes[1,0].set_title('After Red')
+axes[1,1].hist(ng)
+axes[1,1].set_title('After Green')
+axes[1,2].hist(nb)
+axes[1,2].set_title('After Blue')
+
+
+cv2.imshow("original",img)
+cv2.imshow("image",new_rgb)
+plt.show()
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+- 밑은 결과 이미지이다.  
