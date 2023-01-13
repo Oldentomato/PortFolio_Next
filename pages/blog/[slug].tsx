@@ -8,8 +8,15 @@ const Post = ({ post }: InferGetStaticPropsType<typeof getStaticProps>) => {
 
   const tags = post.tag.map((tag, index)=>(<p key={index} className="tagstyle px-2 rounded-md bg-blue-400">{tag}</p>))
 
+  const customMeta = {
+    title: post.title,
+    description: post.description,
+    date: new Date(post.date).toISOString(),
+    tag: post.tag
+  };
+
   return (
-    <Container>
+    <Container customMeta={customMeta}>
       <div className="mt-10 prose mb-20">
         <h1 className="text-sky-700">{post.title}</h1>
         <div className="flex space-x-5 ">
