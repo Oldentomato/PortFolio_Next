@@ -1,0 +1,38 @@
+---
+title: 리액트+타입스크립트 프로젝트 시작하기
+date: 2022-07-21
+description: 리액트와 타입스크립트로 프로젝트 시작하는 방법에대한 설명
+tag: [타입스크립트, 리액트]
+---
+
+리액트를 타입스크립트로 프로젝트를 만들 때 여러 준비작업이 필요하다.  
+우선 프로젝트를 만들때는
+```console
+npx create-react-app "이름" -template typescript
+```
+
+그 뒤, 해당 패키지들을 설치해준다.  
+```console
+npm i --save react react-dom typescript
+npm i -D @types/react
+npm i -D @types/react-dom
+npm i -D ts-loader
+```
+- @types/react : react의 TypeScript 버전이다.  
+- @types/react-dom: react-dom의 Typescript 버전이다.  
+- ts-loader : .ts/.tsx확장자를 읽어들이는 로더이다.  
+
+만일 tsconfig.json이 생성되어있지 않다면 다음과 같이 진행한다. (npm start 하면 자동으로 생성이 된다고는 한다.)  
+타입크스립트를 전역으로 설치해준다.
+```console
+npm install -g typescript
+```
+그리고 프로젝트 파일에서 client 혹은 server파일위치에 각각  
+```console
+tsc --init
+```
+명령어로 tsconfig.json를 생성해준다.  
+  
+json내부에 "target": "ES6" , "jsx": "react", "baseUrl": "./src", 로 지정해준다.  
+baseUrl 의미는 ./src를 절대 경로로 갖겠다는 의미이다.  
+모든 파일은 .js 에서 .tsx로 바꿔준다.

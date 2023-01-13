@@ -1,0 +1,43 @@
+---
+title: 리액트 타입스크립트에서 함수를 쓰는법
+date: 2022-07-21
+description: map으로 순회할 때 렌더링이 되지 않을 겨우에 대하여 설명
+tag: [타입스크립트, 문법, 리액트]
+---
+
+타입스크립트는 기본적으로 모든 변수에 타입명을 지정해주어야 한다.  
+기본 바닐라 자바스크립트에서는 쉽지만 리액트나 express 등 여러 모듈이 들어가면 생각보다 복잡해지고 타입명 찾기가 어려워진다.  
+쓰는 법으로, 매개변수는 변수뒤에 :타입명 이고 반환형은 ():타입명 이다.  
+```typescript
+function user(age:number, str:string="noname"):number{
+    console.log(age);
+    console.log(str);
+    return age
+}
+```
+
+현재 위 함수는 default 매개변수도 쓴 모습이다. 무조건 매개변수의 마지막에 선언해주어야 한다.  
+이 밖에도 선택적 매개변수라는 것을 선언할 수 있다.  
+선택적 매개변수는 생략을 해도되는 매개변수이다. 이 매개변수를 선언하면 default 매개변수로는 쓸 수 없다.  
+```typescript
+function user(age:number, str?:string, info?:string){
+    console.log(age);
+    console.log(str);
+    console.log(info);
+}
+
+user(24);
+user(26, "david");
+user(28, "bella", "my friend");
+```
+
+실행결과는 안쓴 매개변수 부분은 undefined로 나온다.  
+필자의 프로젝트를 예시로 보여주면
+```typescript
+const Auth = {ComposedClass: React.FC, reload:boolean | null, adminRoute:boolean = false):Function => {
+    ...
+    }
+}
+```
+reload는 bool 또는 null을 들어갈 수 있는 유니온 타입으로 지정해주었다.  
+null과 undefined는 데이터 타입으로 쓸 수 있다.  

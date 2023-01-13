@@ -5,3 +5,4 @@ declare namespace JSX {
   }
 
 declare module "*.json"
+declare module "*.mdx"

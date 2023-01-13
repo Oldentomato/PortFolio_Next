@@ -1,0 +1,62 @@
+---
+title: 자바스크립트 {...}[...] 문법에 대하여
+date: 2022-01-29
+description: 자바스크립트 {...}[...]에 대한 문법 설명
+tag: [자바스크립트, 문법]
+---
+
+자바스크립트에서 가끔 보이는 ...은 비구조화 할당 (destructuring assignment)이라 한다.  
+이 구문은 객체의 속성을 해체하여 그 값을 개별 변수에 담을수 있게 하는 자바스크립트 표현식이라 한다.  
+우선 배열에서 표현식으로는
+```javascript
+[a1,a1, ...rest_a] = [1.2.3.4.5.6.7.8.9]
+console.log(a1); // 1
+console.log(a2); // 2
+console.log(rest_a); // [3,4,5,6,7,8,9]
+```
+전개 연산자(...) 를 사용하여 좌항에서 명시적으로 할당되지 않은 나머지 배열 값들을 사용할 수 있다.    
+  
+객체에서의 적용은 아래와 같다.  
+```javascript
+var {a1, a2, ...rest_a} = {a1: 10, a2: 20, a3: 30, a4: 40};
+console.log(a1); // 10
+console.log(a2); // 20
+console.log(rest_a); // {a3: 30, a4: 40}
+```
+
+객체의 경우에는 우항의 key값이 좌항의 변수명과 매칭이 된다.  
+전개 연산자를 사용하여 배열, 객체의 깊은 복사를 할 수 있다.  
+```javascript
+var arr = [1,2,3];
+var copy1 = arr;
+var [...copy2] = arr;
+var copy3 = [...arr];
+
+arr[0] = 'String';
+console.log(arr); // ['String', 2, 3]
+console.log(copy1); // ['String', 2, 3]
+console.log(copy2); // [1,2,3]
+console.log(copy3); // [1,2,3]
+```
+
+얕은 복사인 copy1은 arr을 참조하기 때문에 0번요소가 변경되었지만, 전개 연산자를 사용한 copy2, copy3는 깊은 복사가 된 것을 볼 수 있다.  
+
+객체 역시 전개 연산자로 깊은 복사를 사용할 수 있다.  
+무엇보다도 강력한 점은 복사와 함께 새로운 값을 할당할 수 있다는 점이다.  
+```javascript
+var preState = {
+    name: "Jo",
+    birth: "1999-04-25",
+    age: 24
+};
+
+var state = {
+    ...preState.
+    age: 20
+};
+
+console.log(state); // {name: "Jo", birth: "1999-04-25", age: 20 }
+```
+
+위와 같이 ...preState를 사용하여 기존 객체를 복사함과 동시에 age키에 새로운 값 (20)을 할당할 수 있다.  
+리액트의 props나 state처럼 이전 정보를 이용하는 경우 유용하게 사용할 수 있다.

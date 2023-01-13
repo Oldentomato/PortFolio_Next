@@ -27,7 +27,7 @@ const Container = (props) => {
             <div className="w-full flex flex-col items-center">
                 <div className="flex flex-row items-center">
                     <span className="mx-2 font-extralight text-4xl">
-                        {meta.title}
+                        My Blog
                     </span>
                 </div>
 
