@@ -24,14 +24,14 @@ const Container = (props) => {
                     <meta property="og:site_name" content={meta.author} />
                 </Head>
             </header>
-            <div className="w-full flex flex-col items-center">
+            <div className="flex flex-col items-center ">
                 <div className="flex flex-row items-center">
                     <span className="mx-2 font-extralight text-4xl">
                         My Blog
                     </span>
                 </div>
 
-                <main className="w-full max-w-2xl">{props.children}</main>
+                <main className="max-w-4xl">{props.children}</main>
             </div>
             </Layout>
         </>

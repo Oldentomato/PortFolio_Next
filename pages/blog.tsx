@@ -51,9 +51,6 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
   // Invoke when user click to request another page.
   const handlePageClick = (event) => {
     const newOffset = (event.selected * itemsPerPage) % posts.length;
-    console.log(
-      `User requested page number ${event.selected}, which is offset ${newOffset}`
-    );
     setItemOffset(newOffset);
   };
 
@@ -63,7 +60,7 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
       <ReactPaginate
         breakLabel="..."
         nextLabel="next"
-        className="inline-flex -space-x-px"
+        className="inline-flex -space-x-px my-7"
         previousClassName="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
         nextClassName="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
         pageClassName="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
@@ -82,8 +79,8 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
 export default function Blog({ posts }: InferGetStaticPropsType<typeof getStaticProps>){
     return(
       <Container>
-        <div className="mt-10 flex flex-col">
-          <PaginatedItems itemsPerPage={5} posts={posts}/>
+        <div className="mt-10 flex flex-col items-center">
+          <PaginatedItems itemsPerPage={10} posts={posts}/>
         </div>
       </Container>
 
