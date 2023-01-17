@@ -8,7 +8,7 @@ tag: [도커, feast]
 강의 실습에서 도커를 이용하여 feast를 서빙하는 작업에서 문제가 생겼다.  
 Dockerfile을 작성한 후, 이미지파일로 빌드하는 과정에서 에러가 발생했다.  
 여러 에러 메세지중 gcc관련 에러를 고쳤더니 해결이 되었다.  
-gcc에러가 나온다면 Dockerfile에서 pip 설치 이전에 다음과 같은 명령어롤 써준다.  
+gcc에러가 나온다면 Dockerfile에서 pip 설치 이전에 다음과 같은 명령어를 써준다.  
 ```console
 RUN apt-get update 
 RUN apt-get -y install build-essential
@@ -28,6 +28,7 @@ network 플래그에는 총 3가지가 있는데,
 - bridge: 기본 네트워크 드라이버로 컨테이너 실행 시 별도의 네트워크 지정 없이 독립적으로 실행되는 애플리케이션 컨테이너를 실행하는 경우 사용된다.  
 - host: 컨테이너와 호스트 간의 네트워크 격리를 제거하고 호스트의 네트워킹을 직접 사용할 수 있다. 이 기능을 통해 호스트의 포트를 이용하여 바로 서비스할 수 있다.  
 - none: 컨테이너의 네트워크를 사용하지 않도록 설정되며, none 네트워크를 사용하는 컨테이너는 외부와의 통신이 단절된다.  
+  
 이렇게 존재하고 필자는 host를 이용했다.  
 ```console
 docker run -d --name feast-jupyter -p 8888:8888 -p 6566:6566 -p 5001:5001 -e JUPYTER_TOKEN='password'  -v "$PWD":/home/jovyan/jupyter  --user root --network host  -it feast-docker:latest
