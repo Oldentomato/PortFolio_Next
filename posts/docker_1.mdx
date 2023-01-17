@@ -1,0 +1,34 @@
+---
+title: 도커 빌드오류 해결법
+date: 2023-01-17
+description: 강의 내 도커관련 오류수정내용
+tag: [도커, feast]
+---
+
+강의 실습에서 도커를 이용하여 feast를 서빙하는 작업에서 문제가 생겼다.  
+Dockerfile을 작성한 후, 이미지파일로 빌드하는 과정에서 에러가 발생했다.  
+여러 에러 메세지중 gcc관련 에러를 고쳤더니 해결이 되었다.  
+gcc에러가 나온다면 Dockerfile에서 pip 설치 이전에 다음과 같은 명령어롤 써준다.  
+```console
+RUN apt-get update 
+RUN apt-get -y install build-essential
+````
+
+만일 위에 명령어를 작성하고 빌드를 했는데 permission denied 에러가 발생한다면,  
+그 위에다가 USER root를 작성하면 해결이 된다.  
+추가로 빌드를 성공하고 컨테이너를 생성하는 과정에서 컨테이너가 생성하자마자 상태가 Exited가 된다면  
+docker 의 log를 이용하여 내부 에러를 체크해보면 해결할 수 있다.  
+  
+빌드에러는 해결했지만 마지막에 feast serve에서 도커를 이용한 외부 통신이 잘 되지 않았다.  
+curl: (56) recv failure: connection reset by peer  
+위와 같은 에러가 생기는데, 이것은 내가 접속을 시도하는 것은 localhost이지만 도커는 0.0.0.0으로 열려있어  
+서로 다르기 때문이다. 그러기에 ip 바인딩을 해야하는데 feast에는 ip바인딩에 대한 자료가 없어서  
+도커를 run할때 network 플래그를 이용하여 에러를 해결하였다.  
+network 플래그에는 총 3가지가 있는데,  
+- bridge: 기본 네트워크 드라이버로 컨테이너 실행 시 별도의 네트워크 지정 없이 독립적으로 실행되는 애플리케이션 컨테이너를 실행하는 경우 사용된다.  
+- host: 컨테이너와 호스트 간의 네트워크 격리를 제거하고 호스트의 네트워킹을 직접 사용할 수 있다. 이 기능을 통해 호스트의 포트를 이용하여 바로 서비스할 수 있다.  
+- none: 컨테이너의 네트워크를 사용하지 않도록 설정되며, none 네트워크를 사용하는 컨테이너는 외부와의 통신이 단절된다.  
+이렇게 존재하고 필자는 host를 이용했다.  
+```console
+docker run -d --name feast-jupyter -p 8888:8888 -p 6566:6566 -p 5001:5001 -e JUPYTER_TOKEN='password'  -v "$PWD":/home/jovyan/jupyter  --user root --network host  -it feast-docker:latest
+```

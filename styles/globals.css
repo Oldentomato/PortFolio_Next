@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+.footerspan{
+    @apply text-slate-900 dark:text-white
+    transition duration-100
+}
+
 .bg-primary{
     @apply bg-white dark:bg-slate-800
     transition duration-300
