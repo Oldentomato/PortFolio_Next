@@ -1,5 +1,8 @@
 import { defineDocumentType, makeSource } from "contentlayer/source-files";
-import highlight from "rehype-highlight"
+import PrettyCode from "rehype-pretty-code"
+import rehypeCodeTitles from "rehype-code-titles"
+import remarkGfm from "remark-gfm"
+
 
 export const Post = defineDocumentType(() => ({
   name: "Post",
@@ -16,6 +19,11 @@ export const Post = defineDocumentType(() => ({
 export default makeSource({
   contentDirPath: "posts",
   documentTypes: [Post],
-  mdx: { rehypePlugins: [highlight] }
+  mdx: { 
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [
+      PrettyCode,
+      rehypeCodeTitles
+  ] }
 });
 
