@@ -1,0 +1,45 @@
+---
+title: ImageDataGenerator 이란?
+date: 2022-06-26
+description: pytorch의 ImageDataGenerator에 대한 설명
+tag: [딥러닝, pytorch]
+---
+
+이미지를 학습시킬 때 학습데이터의 양이 적을 경우 학습데이터를 조금씩 변형시켜서 학습데이터의 양을 늘리는 방식 중 하나이다.  
+
+## 파라미터 (객체생성)  
+- shear_range: (float) 밀린강도 범위내에서 임의로 원본 이미지를 변형시킵니다. 수치는 시계반대방향으로 밀림강도를 radian으로 나타냅니다.  
+- zoom_range: (float) 지정된 확대/축소 범위내에서 임의로 원본이미지를 확대/축소합니다. (1 - 수치)~(1 + 수치) 사이의 범위로 확대축소를 합니다.  
+    - ex)zoom_range = 0.3  
+- horizontal_flip: (bool) 수평방향 뒤집기  
+- vertical_flip: (bool) 수직방향 뒤집기  
+- rescale: 값을 0과 1사이로 변경 (1./255)  
+- rotation_range: 지정된 각도 범위내에서 임의로 원본이미지를 회전시킵니다. 단위 각도, 정수형  
+    - ex) roration_range = 90  
+- width_shift_range: 지정된 수평방향 이동 범위 내에서 임의로 원본 이미지를 이동시킵니다. 수치는 전체 넓이의 비율(float)로 나타냅니다.  
+    - ex) 0.1이면 전체 넓이 100의 10px 좌우로 이동  
+- height_shift_range: 위와 동일하며 수직으로 계산한다.  
+
+## 파라미터 (이미지 변형)  
+train_datagen 이라는 틀에 flow 함수를 사용하여 실제 데이터를 파라미터에 넣어주면 이미지 변형이 완료된다.
+(flow는 x,y로 넣어주고, flow_from_directory는 경로를 지정해준다)  
+- batch_size: 배치 사이즈  
+- shuffle: 랜덤 여부  
+- target_size: 이미지 사이즈  
+- color_mode: 이미지 채널 수  
+- class_mode: Y 값 변화 방법  
+
+## 출력결과 뽑아내기
+```python
+augs = train_generator.__getitem__(8)
+
+plt.figure(figsize=(16,8))
+for i, img in enumerate(augs[0]):
+     plt.subplot(4,8,i+1)
+     plt.title('%.2f'% augs[1][i])
+     plt.axis('off')
+     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+     plt.imshow(img.squeeze())
+
+````
+train_generator.__getitem__(idx)로 결과를 가져온다.  

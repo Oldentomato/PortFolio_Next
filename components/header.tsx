@@ -26,7 +26,7 @@ export default function Header({ children }: AddLayoutProps) {
             <Link href="/" className="mr-5 hover:text-gray-900">Home</Link>
             <Link className="mr-5 hover:text-gray-900" href="/projects" >Project</Link>
             <Link className="mr-5 hover:text-gray-900" href="/blog" >Blog</Link>
-            <Link href="/" className="mr-5 hover:text-gray-900">Contact</Link>
+            <Link href="/activites" className="mr-5 hover:text-gray-900">Activites</Link>
           </nav>
             <DarkModeToggleButton/>
           </div>

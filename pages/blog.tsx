@@ -2,7 +2,7 @@ import BlogPost from "../components/blog/blogpost"
 import { allPosts } from "contentlayer/generated";
 import { InferGetStaticPropsType } from "next";
 import Container from "../components/Container";
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import ReactPaginate from 'react-paginate';
 
 export const getStaticProps = async () => {
@@ -74,13 +74,30 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
   );
 }
 
+function TagBtns(){
+  return(
+    <>
+    </>
+  );
+}
+
 
 
 export default function Blog({ posts }: InferGetStaticPropsType<typeof getStaticProps>){
+
+  const [viewposts, setviewposts] = useState(posts)
+
+  useEffect(()=>{
+
+  },viewposts)
+
     return(
       <Container>
+        <div>
+          <TagBtns />
+        </div>
         <div className="mt-10 flex flex-col items-center">
-          <PaginatedItems itemsPerPage={10} posts={posts}/>
+          <PaginatedItems itemsPerPage={10} posts={viewposts}/>
         </div>
       </Container>
 

@@ -12,7 +12,7 @@ return(
     posts.map((file,index) =>(
         <Link key = {index} to = {`$file._id`} style={{textAlign: 'left', marginLeft:'80px'}}>
             <h2 style={{color:'#fff}}>{file.title}</h2>
-            <h2 style={{color:'#fff' marginLeft:'10px'}}>{moment(file.createAt).format("MMM Do YY)}</h2>
+            <h2 style={{color:'#fff' marginLeft:'10px'}}>{moment(file.createAt).format("MMM Do YY")}</h2>
         </Link>
     ))
 )
