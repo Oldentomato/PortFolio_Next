@@ -1,0 +1,64 @@
+---
+title: meta tag 메타태그란?
+date: 2023-01-21
+description: html에서 meta태그에 대한 설명
+tag: [html, SEO]
+---
+
+## 메타태그란?
+메타태그란 이름에서 볼수있듯 (x)html 문서의 특수태그이며 반드시 <head></head> 안에 <body></body> 보다 상단에 위치해야 한다.  
+메타태그는 이 (x)html문서가 어떤내용을 담고 있고, 핵심키워드는 무엇이며 누가만들었는지 어떤 언어코드로 설정되어있는지의 정보를 담고있다.  
+화면에 표시되지는 않지만 검색엔진이나 브라우저에 읽힌다.  
+이러한 메타태그로 charset, description, keyword, author, refresh, viewport 등의 정보를 표기할 수있다.  
+
+### 1. 메타태그의 속성
+메타태그는 http-equiv, name, content 세가지의 속성이 있다.  
+- http-equiv: 이 속성은 문서에서 초기정보를 나타내는 속성으로 메타요소에서 정의된 명령사항들을 먼저 실행한 후 페이지를 로딩한다. HTML문서가 응답 헤더와 함께 웹서버로부터 
+웹 브라우저에 전송되었을 때에만 의미를 갖는다. 기본언어(content-language), MIME 타입(content-type), 브라우저 호환성설정(X-UA-Compatible), 페이지 리로드(refresh) 등을 나타낼 수 있다.  
+- name: 속성값으로는 subject, title, author, keywords 등이 있다. 검색엔진에게 문서의 내용을 요약해주는 역할을 담당한다고 할 수있다.  
+- content: 메타태그의 정보를 지정해준다.  
+
+### 2. 메타태그의 종류
+기본언어(content-language) 전처리될 기본언어를 지정할 수 있다. 선언하지 않는 경우 기본언어가 존재하지 않는것으로 간주한다.  
+content에는 그에 맞는 값을 입력해야 한다. 아래 예제에서는 ko(한국어)로 지정되어 있다.  
+```html
+<meta http-equiv="content-language" content="ko" />
+```
+
+- MIME타입(content-type): 이 속성은 현재 페이지의 인코딩(문자셋)을 어떠한 방식으로 출력할 지 결정하는 속성이다. 만약 제작한 웹페이지의 한글이 깨져 보인다면, 거의 이 메타정보와 실제
+페이지의 문자셋이 달라 생긴 문제일 가능성이 매우 크다. MIME타입을 지정해준 다음, 세미콜론으로 구분한다. 국내에서는 보통 UTF-8, EUC-KR을 많이 사용하고 있다. 
+그리고 현재 추세는 다른 언어의 사용자가 접근 시에도 올바르게 보여질 수 있는 UTF-8를 권장하고 있다. 
+```html
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+```
+
+- 브라우저호환설정(X-UA-Compatible): 이 메타 정보는 IE(인터넷 익스프롤러)가 하위 버전 IE모드로 렌더링 하도록 만들어 준다. 예를들어 content속성 값에 "IE=EmulateE7"로 넣는경우,
+ IE8 이상의 최신 IE브라우저라도 IE7버전처럼 페이지를 렌더링 한다.  
+ ```html
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+```
+
+- 페이지 리로드(refresh): 페이지를 주기적으로 새로고침하게 만들어 준다. 예상치 못한 새로고침은 사용자로 하여금 불편함을 느끼게 할 수 있다. 
+아래 예시코드는 content 값에 숫자를 입력 후, 세미콜론으로 구분지어 url로 주소를 넣어주면 해당 시간 뒤에 지정해준 url로 페이지가 이동된다는 뜻이다.  
+```html
+<meta http-equiv="refresh" content="30; url=http://www.google.com" />
+```
+
+- 소개내용(description): 정보 같은 경우는 현재 페이지를 간략히 소개하는 문구를 적도록 한다. 이를 검색엔진이 검색된 페이지에 페이지 제목과 같이 표현되며, 
+'공유하기' 같은 것을 했을 때에 활용이 될 수도 있다.  
+```html
+<meta name="Description" content="내용" />
+```
+
+- 키워드(Keywords): 페이지에 대한 키워드 정보들을 담고 있다. 페이지의 주요한 단어들을 콤마로 구분하여 값을 넣어주도록 한다. 이 키워드 정보는 검색엔진이 보다 검색엔진을
+ 용이하도록 하게 만든다만, 이를 악용한 광고성 페이지들은 실제 콘텐츠와는 다른 단어들을 무작위로 넣기도 한다.  
+ ```html 
+<meta name="Keywords" content="키워드1, 키워드2, 키워드3" />
+```
+
+- 작성자(author): 페이지의 저자를 나타낸다. content의 값으로 저자를 나타내는 문자열을 써야 한다. 이 메타저보가 큰 의미를 가지진 않지만, 소스 상에서도 자신이 제작했음을 명시할 수 있다.    
+```html 
+<meta name="author" content="이름" />
+```
+
+[참조 https://team-willset.tistory.com/entry/meta-tag-메타태그란](https://team-willset.tistory.com/entry/meta-tag-메타태그란)
