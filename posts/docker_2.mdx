@@ -1,0 +1,97 @@
+---
+title: 도커관련 유용한 팁
+date: 2023-01-17
+description: 프로젝트하면서 알게된 도커 팁들
+tag: [도커, 도커컴포즈]
+---
+
+## docker-compose에서 컨테이너 상태에 따라 실행시키는 법  
+docker-compose.yml 에서 depends_on 과 컨테이너 명 아래에 condition을 추가한다.  
+service_healthy, service_completed_successfully 등이 있다. (docker-compose v1.29 이상)  
+  
+## docker-compose command  
+docker-compose에서 command를 작성하면 Dockerfile의 CMD는 읽히지 않는다.  
+command 에서 여러 command를 입력하고 싶으면  
+bash -c "<명령어> && <명령어>"  
+이렇게 표현하면 된다.  
+
+## docker-compose shared volume  
+docker-compose 의 shared volume을 사용하려면 따로 yml에 volumes를 작성해주고 다른 컨테이너의 경로들을 하위경로까지 똑같이 지정해주어야 한다.  
+Dockerfile에서 WORKDIR에서도 shared volume에서 지정한 경로로 해주지 않으면 shared volume을 사용할 수 없다.  
+  
+## 예시 yml 코드  
+```yaml
+version: "3"
+
+services:
+  web:
+    build: ./monitoring_docker
+    volumes:
+      - shared-data:/code/datas
+    ports:
+      - "5000:80"
+    depends_on:
+      store:
+        condition: service_completed_successfully
+    environment:
+      - ENABLE_METRICS=true
+    command: bash -c "cd /manager && uvicorn app.api:app --host 0.0.0.0 --port 80"
+
+  store:
+    build: ./feature_store_docker
+    volumes:
+      - shared-data:/code/datas
+    ports:
+      - "21571:21571"
+
+    command: bash -c "python get_data.py && feast apply"
+
+volumes:
+  shared-data:
+```
+  
+  
+## docker-compose 설치법  
+- curl 명령어를 통해 docker-compose를 설치한다.  
+  ```bash
+  sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  ```
+- 다운로드한 도커 컴포트 파일을 실행 가능하도록 다운로드한 경로에 권한을 부여한다.  
+  ```bash
+  sudo chmod +x /usr/local/bin/docker-compose
+  ```
+- 심볼릭 링크 설정으로 path 경로를 아래와 같이 설정해준다.  
+  ```bash
+  sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+  ```
+- 정상 설치 확인
+  ```bash
+  docker-compose -v
+  ```
+  
+## docker Got permission denied 에러 대처법
+- sudo groupadd docker
+- sudo usermod -aG docker $USER
+- newgrp docker
+- reboot
+  
+## 도커 컨테이너 안에 있는 파일을 로컬에 복사
+컨테이너의 이름을 con, 복사하는 이름을 /root/data.txt로 가정하고 복사하는 곳을 /home/dst/라고 가정한다.  
+```bash
+# : 로 컨테이너와 파일의 위치를 구분한 뒤, 뒤에 복사할 곳의 경로를 적는다.
+docker cp con:/root/data.txt /home/dst/
+```
+  
+## docker-compose cache없이 설치하는 법
+```bash
+docker-compose build --no-cache
+```
+  
+## Dockerfile에서 docker를 run으로 유지시키는 법
+CMD 부분에 tail -f /dev/null 을 작성해 주면 된다.  
+  
+## Dockerfile 빌드법
+```bash
+docker build --tag <컨테이너명>:<버전> .
+```
+뒤에 띄어쓰고 . 은 해당 경로에서 Dockerfile이 있을 경우에 작성하고 그러지않으면 경로를 작성해주면 된다.  
