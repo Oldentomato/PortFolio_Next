@@ -35,7 +35,7 @@ mms의 수신처리를 위해서는 permission 권한 설정과 intent 등록이
           </intent-filter>
       </receiver>
 ```
-android:name은 해당 파일의 <manifest> 에서 package명에서 sms,mms 수신처리코드가 작성된 클래스명을 써주면 된다고 한다.  
+android:name은 해당 파일의 manifest에서 package명에서 sms,mms 수신처리코드가 작성된 클래스명을 써주면 된다고 한다.  
 하지만 이유는 모르지만 작동되지 않았다.(여기에는 작성되지 않았지만 WAP_PUSH_RECEIVED 와 mms datatype도 있었다.)  
 
 두 번째 방법의 코드는 아래와 같다.  
