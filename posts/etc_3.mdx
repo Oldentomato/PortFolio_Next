@@ -1,0 +1,348 @@
+---
+title: npm 커스텀 SmsListener
+date: 2023-04-08
+description: SmsListener.addListener의 내용 수정
+tag: [react-native, npm, java]
+---
+
+msg_guard 에서 메시지 수신 이벤트 처리를 위해 react-native-android-sms-listener를 다운받아 사용했다.  
+하지만 react-native-android-sms-listener는 sms 이벤트 수신처리만 있고 mms 와 chat+ 수신처리는 없었다.  
+그래서 따로 모듈 내 자바파일에서 mms 수신처리 코드를 작성했다.  
+android studio document와 chatgpt가 큰 참고가 되었다.  
+mms의 수신처리를 위해서는 permission 권한 설정과 intent 등록이 필요하다.(sms는 permission만)  
+
+```xml
+    <!-- sms -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <!-- mms -->
+    <uses-permission android:name="android.permission.RECEIVE_MMS"/>
+    <uses-permission android:name="android.permission.WAP_PUSH_RECEIVED" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+```
+위 permission은 app 내 androidmanifest이나 네이티브 모듈 내 androidmanifest에 추가하면 된다.  
+그다음은 intent 등록이다.  
+방법은 크게 두가지가 있다. 하나는 manifest xml 코드에서 <receiver>를 이용해 등록하는 것이고,  
+다른 하나는 ReactPackage를 상속받는 클래스 내 createNativeModules함수에서 등록하는 방법이다.  
+필자는 <receiver> 방식이 되지 않아 두번째 방법을 사용했지만, 참고용으로 작성해놓겠다.  
+
+```xml
+      <receiver android:name="com.msg_guard.SmsReceiver" android:exported="true">
+          <intent-filter>
+              <action android:name="com.samsung.android.chatplus.MMS_RECEIVED" />
+          </intent-filter>
+      </receiver>
+```
+android:name은 해당 파일의 <manifest> 에서 package명에서 sms,mms 수신처리코드가 작성된 클래스명을 써주면 된다고 한다.  
+하지만 이유는 모르지만 작동되지 않았다.(여기에는 작성되지 않았지만 WAP_PUSH_RECEIVED 와 mms datatype도 있었다.)  
+
+두 번째 방법의 코드는 아래와 같다.  
+```java
+import android.content.IntentFilter;
+...
+public class SmsListenerPackage implements ReactPackage {
+  private SmsReceiver myBroadcastReceiver;
+  ...
+    @Override
+    public List<NativeModule> createNativeModules(ReactApplicationContext context){
+        //mms 이벤트 수신 intent 등록
+        // BroadcastReceiver 클래스 생성
+        myBroadcastReceiver = new SmsReceiver(context);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.provider.Telephony.WAP_PUSH_RECEIVED");
+        filter.addAction("com.samsung.android.chatplus.MMS_RECEIVED");
+        try {
+            filter.addDataType("application/vnd.wap.mms-message");
+        } catch (IntentFilter.MalformedMimeTypeException e) {
+            e.printStackTrace();
+        }
+        context.registerReceiver(myBroadcastReceiver, filter);
+
+        return Collections.<NativeModule>singletonList(
+                new SmsListenerModule(context)
+        );
+    }
+    ...
+  }
+```
+이제 메인코드로 넘어간다. 기존에 sms처리는 짜여있어서 살짝만 수정해주었고, mms는 새로 추가하였다.  
+아래는 전체코드이다.  
+```java
+package com.centaurwarchief.smslistener;
+
+import android.content.ContentResolver;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.Telephony;
+import android.telephony.SmsMessage;
+import android.util.Log;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Handler;
+
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.lang.StringBuilder;
+import java.lang.Runnable;
+import java.nio.charset.UnsupportedCharsetException;
+
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+
+public class SmsReceiver extends BroadcastReceiver {
+
+    private static Context context;
+
+
+    private String getMmsNumber(String id){
+        String result = null;
+
+        Uri uri = Uri.parse("content://mms/"+id+"/addr");
+        String[] projection = new String[] {"address"};
+        String selection = "msg_id = ? and type = 137"; //type=137 은 발신자
+        String[] selectionArgs = new String[]{id};
+
+        Cursor cursor = context.getContentResolver().query(uri, projection, selection,selectionArgs,"_id asc limit 1");
+        if(cursor.getCount() == 0){ //없을경우
+            cursor.close();
+            return result;
+        }
+        cursor.moveToFirst();
+        result = cursor.getString(cursor.getColumnIndex("address"));
+
+        return result;
+    }
+
+    private String getMmsText(String id){
+        Uri partURI = Uri.parse("content://mms/part/"+id);
+
+        InputStream is = null;
+        StringBuilder sb = new StringBuilder();
+        try{
+            is = context.getContentResolver().openInputStream(partURI);
+            if(is != null){
+                InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+                BufferedReader reader = new BufferedReader(isr);
+                String temp = reader.readLine();
+                while(temp!=null){
+                    sb.append(temp);
+                    temp = reader.readLine();
+                }
+            }
+        }catch(IOException e){}
+        finally{
+            if(is != null){
+                try{
+                    is.close();
+                }catch(IOException e){}
+            }
+        }
+        return sb.toString();
+    }
+
+    private String Get_MMS(){
+        int mms_id = Get_Mms_ID();
+        String str_id = Integer.toString(mms_id);
+        String selectionPart = "mid="+str_id;
+        Uri uri = Uri.parse("content://mms/part");
+        Cursor cursor2 = context.getContentResolver().query(uri,null,selectionPart,null,null);
+        if(cursor2.moveToFirst()){
+            int partId = cursor2.getInt(cursor2.getColumnIndex("_id"));
+            String type = cursor2.getString(cursor2.getColumnIndex("ct"));
+            if("text/plain".equals(type)){
+                String data = cursor2.getString(cursor2.getColumnIndex("_data"));
+                if(data != null){
+                    return getMmsText(Integer.toString(partId));
+                }else{
+                    return cursor2.getString(cursor2.getColumnIndex("text"));
+                }
+            }
+        }
+        return "mms_part_query_error";
+
+    }
+
+    private int Get_Mms_ID(){
+        Uri uriMms = Uri.parse("content://mms/");
+        final String[] projection = new String[]{"*"};
+        Cursor cursor = context.getContentResolver().query(uriMms, projection, null,null,null);
+        if(cursor.moveToFirst()){
+            int id = cursor.getInt(cursor.getColumnIndex("_id"));
+            // String str_id = Integer.toString(id);
+            return id;
+        }
+        
+
+        return -1;
+    }
+
+    private double GetMmsDate(){
+        Uri uriMms = Uri.parse("content://mms/");
+        final String[] projection = new String[]{"*"};
+        Cursor cursor = context.getContentResolver().query(uriMms, projection, null,null,null);
+        if(cursor.moveToFirst()){
+            double date = cursor.getDouble(cursor.getColumnIndex("date"));
+            // String str_id = Integer.toString(id);
+            return date;
+        }
+        
+
+        return -1;
+    }
+        private int Get_Sms_ID(){
+        Uri uriMms = Uri.parse("content://sms/");
+        final String[] projection = new String[]{"*"};
+        Cursor cursor = context.getContentResolver().query(uriMms, projection, null,null,null);
+        if(cursor.moveToFirst()){
+            int id = cursor.getInt(cursor.getColumnIndex("_id"));
+            // String str_id = Integer.toString(id);
+            return id;
+        }
+        
+        return -1;
+    }
+
+
+    
+
+    private ReactApplicationContext mContext;
+
+    private static final String EVENT_SMS = "com.centaurwarchief.smslistener:smsReceived";
+
+    public SmsReceiver() {
+        super();
+    }
+
+    public SmsReceiver(ReactApplicationContext reactcontext) {
+        mContext = reactcontext;
+        context = reactcontext.getApplicationContext();
+    }
+
+    private void receiveMessage(SmsMessage message, String body) {
+        if (mContext == null) {
+            return;
+        }
+
+        if (! mContext.hasActiveCatalystInstance()) {
+            return;
+        }
+
+        Log.d(
+            SmsListenerPackage.TAG,
+            String.format("%s: %s", message.getOriginatingAddress(), message.getMessageBody())
+        );
+
+
+
+        WritableNativeMap receivedMessage = new WritableNativeMap();
+
+        receivedMessage.putString("originatingAddress", message.getOriginatingAddress());
+        receivedMessage.putString("body", body.length() > 0 ? body : message.getMessageBody());
+        receivedMessage.putDouble("timestamp", message.getTimestampMillis());
+        receivedMessage.putInt("msg_id",Get_Sms_ID());
+        
+
+        mContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(EVENT_SMS, receivedMessage);
+    }
+
+
+
+    private void receiveMultipartMessage(SmsMessage[] messages) {
+        SmsMessage sms = messages[0];
+        String body;
+
+        if (messages.length == 1 || sms.isReplace()) {
+            body = sms.getDisplayMessageBody();
+        } else {
+            StringBuilder bodyText = new StringBuilder();
+
+            for (SmsMessage message : messages) {
+                bodyText.append(message.getMessageBody());
+            }
+
+            body = bodyText.toString();
+        }
+
+        receiveMessage(sms, body);
+    }
+
+    @Override//채팅+는 인식이안됨
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if(action.equals("android.provider.Telephony.SMS_RECEIVED")){//sms
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                receiveMultipartMessage(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+                return;
+            }
+
+            try {
+                final Bundle bundle = intent.getExtras();
+
+                if (bundle == null || ! bundle.containsKey("pdus")) {
+                    return;
+                }
+
+                final Object[] pdus = (Object[]) bundle.get("pdus");
+                final SmsMessage[] messages = new SmsMessage[pdus.length];
+
+                for (int i = 0; i < pdus.length; i++) {
+                    messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                }
+
+                receiveMultipartMessage(messages);
+            } catch (Exception e) {
+                Log.e(SmsListenerPackage.TAG, e.getMessage());
+            }
+        }
+        else if(action.equals("com.samsung.android.chatplus.MMS_RECEIVED")){
+            receivedMessage.putInt("sms_id",Get_Mms_ID());
+            receivedMessage.putString("body",getMmsText(Integer.toString(Get_Mms_ID())));
+            receivedMessage.putString("originatingAddress",getMmsNumber(Integer.toString(Get_Mms_ID())));
+            receivedMessage.putDouble("timestamp", GetMmsDate());
+
+            mContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(EVENT_SMS, receivedMessage);
+        }
+        else{
+            WritableNativeMap receivedMessage = new WritableNativeMap();
+
+            receivedMessage.putInt("msg_id",Get_Mms_ID());
+            receivedMessage.putString("body",getMmsText(Integer.toString(Get_Mms_ID())));
+            receivedMessage.putString("originatingAddress",getMmsNumber(Integer.toString(Get_Mms_ID())));
+            receivedMessage.putDouble("timestamp", GetMmsDate());
+            mContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(EVENT_SMS, receivedMessage);
+        }
+
+
+    }
+
+}
+
+```
+4주에 걸쳐서 버그고치면서 작성하느라 코드가 깔끔하지 못하다.  
+그리고 현재 위 코드는 mms body를 잘 가져오지 못하는 코드이다.  
+추후에 수정할 예정이다. 모든 수정이 끝나면 따로 npm 모듈로 제작해 볼 계획이다.  
+  
+추가로 이 기능들은 백그라운드에서도 진행이 되어야하는데 그럴때는 ReactContextBaseJavaModule와 LifecycleEventListener를 상속받는 클래스에서  
+onHostPause() 함수 내 unregisterReceiver()를 주석시켜주면 된다.  
+```java
+    @Override
+    public void onHostPause() {
+        // unregisterReceiver(mReceiver);
+    }
+```

@@ -1,4 +1,3 @@
-import { AddLayoutProps } from "./types";
 import Head from "next/head";
 import Layout from "../components/layout";
 import metadata from "./data/metadata"
