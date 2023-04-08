@@ -24,9 +24,9 @@ mms의 수신처리를 위해서는 permission 권한 설정과 intent 등록이
 ```
 위 permission은 app 내 androidmanifest이나 네이티브 모듈 내 androidmanifest에 추가하면 된다.  
 그다음은 intent 등록이다.  
-방법은 크게 두가지가 있다. 하나는 manifest xml 코드에서 <receiver>를 이용해 등록하는 것이고,  
+방법은 크게 두가지가 있다. 하나는 manifest xml 코드에서 receiver를 이용해 등록하는 것이고,  
 다른 하나는 ReactPackage를 상속받는 클래스 내 createNativeModules함수에서 등록하는 방법이다.  
-필자는 <receiver> 방식이 되지 않아 두번째 방법을 사용했지만, 참고용으로 작성해놓겠다.  
+필자는 receiver 방식이 되지 않아 두번째 방법을 사용했지만, 참고용으로 작성해놓겠다.  
 
 ```xml
       <receiver android:name="com.msg_guard.SmsReceiver" android:exported="true">
