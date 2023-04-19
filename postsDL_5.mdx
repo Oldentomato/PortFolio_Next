@@ -1,0 +1,38 @@
+---
+title: YOLO_v7 사용 팁
+date: 2023-04-19
+description: YOLO_v7 도커로 사용하는 법에대한 설명
+tag: [딥러닝, Yolo_v7, 도커, 파이썬]
+---
+
+도커를 이용한 Yolo_v7을 사용할 때에 대한 설명이다.  
+도커는 다음과 같은 명령어로 컨테이너를 생성해준다.  
+```bash
+docker run -it --restart=always --name yaming --gpus all --ipc=host -v /mnt/d/yaming_dataset:/data -p 8888:8888 pytorch/pytorch
+```
+여기서 --ipc=host는  
+ERROR: Unexpected bus error encountered in worker. This might be caused by insufficient shared memory (shm)  
+위의 에러를 방지하기 위함이다.  
+ipc 네임스페이스는 명명된 공유 메모리 세그먼트, 세마포어 및 메시지 큐를 분리한다.  
+host로 지정함으로써 호스트 시스템의 IPC 네임스페이스를 사용. 즉, 호스트 PC의 메모리를 해당 컨테이너와 공유한다는 뜻으로 생각이된다.  
+[참고 도커 공식문서](https://docs.docker.com/engine/reference/run/#ipc-settings---ipc)   
+  
+YOLO 실행 명령어는 그 때의 프로젝트의 기준으로 작성하자면 다음과 같다.  
+```bash
+python train.py --img 1024 1024 --batch 4 --epochs 100 --device 0 --data ./data/data.yaml --cfg ./cfg/training/yolov7.yaml --weights 'yolov7_training.pt' --name yolov7_result --hyp data/hyp.scratch.custom.yaml --workers 6
+```
+
+만일 YOLO를 실행하는데  
+ImportError: libGL.so.1: cannot open shared object file: No such file or directory  
+위의 에러가 난다면 다음과 같은 패키지들을 설치해 준다.  
+```bash
+apt-get update
+apt-get install ffmpeg libsm6 libxext6  -y
+```
+  
+--hyp 옵션을 사용하면(예상) weight&biases를 사용하라는 안내문구가 뜨게 된다. 사용하려면 pip install wandb로 설치해 준 다음,  
+weights&biases 에 로그인 후 apikey 복사하고 wandb login 명령어를 실행하고 해당 키를 붙여넣기하면 된다.  
+  
+--weights 'yolov7_training.pt' 를 사용하려면 [YOLO_v7 Github](https://github.com/WongKinYiu/yolov7) 에 들어가서 Transfer learning에 간 다음,  
+해당 모델을 다운받고 옮겨놓아야 한다. 그 뒤, train.py 에서 85,86 번째 줄 모델을 다욷받는 코드를 주석처리해주면 된다.  
+
