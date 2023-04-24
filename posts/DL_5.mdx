@@ -62,7 +62,7 @@ h1w5 + h2w6 = (6w1 + 9w2)w5 + (6w3 + 9w4)w6
 그리고 현재 지점에서 기울기만큼 빼주면 3 - 1 = 2 가 된다.  
 말그대로 경사로 인해 하강하는 것처럼 보여 경사하강법이라 한다.  
 참고로 기울기는 / 방향이면 양수, \ 방향이면 음수이다.  
-수식으로 표현하면 $$\omega'=\omega-\alpha \frac{\partial * E}{\partial * \omega}$$
+수식으로 표현하면 $$w1'= w1 - \alpha \frac{\partial * E}{\partial * w1}$$ 
 해당수식에서 w1이 총 손실 E에 얼마나 큰 영향을 끼치는가. 즉 기울기이다.(현재 가중치 하나의 기준으로)  
   
 따라서 딥러닝 학습과정은  
@@ -75,7 +75,7 @@ h1w5 + h2w6 = (6w1 + 9w2)w5 + (6w3 + 9w4)w6
 ![DL_6](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_5/iamge_4.png?raw=true)  
 만일 위 그림의 동그란 점이 랜덤으로 찍히고 기울기가 0까지 다다르게 되면 최저의 오차값을 찾지못하고 종료하게 될 것이다.  
 이것의 해결책은 기울기만 빼지말고 learning rate * 기울기 만큼 빼면된다.  
-$\alpha \frac{\partial * E}{\partial * \omega}$ 에서 $\alpha$가 learning rate이다.  
+$\alpha \frac{\partial * E}{\partial * w1}$ 에서 $\alpha$가 learning rate이다.  
 만일 기울기가 1이고 learning rate가 3이면 -3 이 계산이 되므로 지점은 네모점으로 된다. 기본적으로 0.01로 시작하여 조정해 나가면 된다.  
   
 하지만 고정된 값만 주면 복잡한 문제일 경우 학습이 안일어날 수도 있다.  
