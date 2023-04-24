@@ -2,6 +2,8 @@ import { defineDocumentType, makeSource } from "contentlayer/source-files";
 import PrettyCode from "rehype-pretty-code"
 import rehypeCodeTitles from "rehype-code-titles"
 import remarkGfm from "remark-gfm"
+import rehypeKatex from 'rehype-katex'
+import remarkMath from 'remark-math'
 
 
 export const Post = defineDocumentType(() => ({
@@ -20,10 +22,11 @@ export default makeSource({
   contentDirPath: "posts",
   documentTypes: [Post],
   mdx: { 
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [
       PrettyCode,
-      rehypeCodeTitles
+      rehypeCodeTitles,
+      rehypeKatex
   ] }
 });
 
