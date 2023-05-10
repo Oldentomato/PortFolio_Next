@@ -1,0 +1,60 @@
+---
+title: Auto Encoder란
+date: 2023-05-10
+description: Auto Encoder에 대한 내용
+tag: [딥러닝]
+---  
+
+## Auto Encoder란
+아래의 그림과 같이 단순히 입력을 출력으로 복사하는 신경망이다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_1.png?raw=true)  
+Encoder와 Decoder로 구성된 딥러닝 모델이라고도 한다.  
+가장 핵심은 데이터를 잘 압축하는 latent space vector를 얻고자 하는 것이다.  
+여기서 latent space에 대해 설명은 아래로 이동해서 참고하면 된다.  
+[latent space에 대한 게시글](https://wsportfolio.vercel.app/blog/DL_8)  
+
+오토인코더는 간단한 신경망으로 보이지만 네트워크에 여러가지 방법으로 제약을 줌으로써 어려운 신경망으로 만든다.  
+예를 들어 위 그림처럼 hidden layer의 뉴런 수를 input layer보다 작게해서 데이터를 압축(차원을 축소)한다거나,  
+입력 데이터에 노이즈를 추가한 후 원본 입력을 복원할 수 있도록 네트워크를 학습하는 등 다양한 오토인코더가 있다.  
+이러한 제약들은 오토인코더가 단순히 입력을 바로 출력으로 복사하지 못하도록 방지하며, 데이터를 효율적으로 표현하는 방법을 학습하도록 제어한다.  
+이제부터 종류들에 대해 설명하는데, 실제로 구현하는 코드는 아래 참고사이트에서 참고가 가능하다.  
+[참고 사이트](https://excelsior-cjh.tistory.com/187)  
+
+## Undercomplete 오토인코더  
+오토인코더는 위의 그림에서처럼, 입력과 출력층의 뉴련 수가 동일하다는 것만 제외하면 일반적인 MLP와 동일한 구조이다.  
+오토인코더는 입력을 재구성하기 때문에 출력을 재구성이라고도 하며, 손실함수는 입력과 재구성(출력)의 차이를 가지고 계산한다.  
+위 그림의 오토인코더는 히든 레이어의 뉴런(노드, 유닛)이 입력층보다 작으므로 입력이 저차원으로 표현되는데,  
+이러한 오토인코더를 Undercomplete AutoEncoder라고 한다. Undercomplete 오토인코더는 저차원을 가지는 히든 레이어에 의해 입력을 그대로 출력으로 복사할 수 없기 때문에,  
+출력이 입력과 같은 값을 출력하기 위해 학습해야 한다.  
+이러한 학습을 통해 undercomplete 오토인코더는 입력 데이터에서 가장 중요한 특성을 학습하도록 한다.  
+
+## Stacked 오토인코더  
+Stacked 오토인코더는 또는 deep 오토인코더는 여러개의 히든 레이어를 가지는 오토인코더이며, 레이어를 추가할수록 오토인코더가 더 복잡한 코딩(부호화)을 학습할 수 있다.  
+stacked 오토인코더의 구조는 아래의 그림과 같이 가운데 히든레이어(코딩층)을 기준으로 개칭인 구조를 가진다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_2.png?raw=true)  
+
+## Stacked 오토인코더를 이용한 비지도 사전학습  
+대부분이 레이블되어 있지 않는 데이터셋이 있을 때, 먼저 전체 데이터를 사용해 stacked 오토인코더를 학습시킨다.  
+그런 다음 오토인코더의 하위 레이어를 재사용해 분류와 같은 실제 문제를 해결하기 위한 신경망을 만들고 레이블된 데이터를 사용해 학습시킬 수 있다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_3.png?raw=true)  
+
+## Denoising 오토인코더  
+오코인코더가 의미있는 특성(feature)을 학습하도록 제약을 주는 다름 방법은 입력에 노이즈(잡음)를 추가하고, 노이즈가 없는 원본 입력을 재구성하도록 학습시키는 것이다.  
+노이즈는 아래의 그림처럼 입력에 가우시안 노이즈를 추가하거나, 드롭아웃처럼 랜덤하게 입력 유닛(노드)를 꺼서 발생시밀 수 있다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_4.png?raw=true)  
+
+## Sparse 오토인코더  
+오토인코더가 좋은 특성을 추출하도록 만드는 다른 제약 방법은 희소성을 이용하는 것인데, 이러한 오토인코더를 Sparse Autoencoder라고 한다.  
+이 방법은 손실함수에 적절한 항을 추가하여 오토인코더가 코딩층(가운데 층)에서 활성화되는 뉴런 수를 감소시키는 것이다.  
+예를들어 코딩층에서 평균적으로 5%뉴런만 활성화되도록 만들어 주게 되면, 오토인코더는 5%의 뉴런을 조합하여 입력을 재구성해야하게 때문에 유용한 특성을 표현하게 된다.  
+이러한 Sparse 오토인코더를 만들기 위해서는 먼저 학습 단계에서 코딩층의 실제 sparse(희소)정도를 측정해야하는데,  
+전체 학습 배치에 대해 코딩층의 평균적인 활성화를 계산한다. 배치의 크기는 너무 작지 않게 설정해준다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_5.png?raw=true)  
+
+## Variational AutoEncoder(VAE)  
+VAE는 2014년 D.Kingma와 M.Welling이 Auto-Encoding Variational Bayes 논문에서 제안한 오토인코더의 한 종류이다. VAE는 위에서 살펴본 오토인코더와는 다음과 같은 다른점이 있다.  
+- VAE는 확률 오토인코더이다. 즉, 학습이 끝난 후에도 출력이 부분적으로 우연에 의해 결정된다.  
+- VAE는 생성 오토인코더이며, 학습 데이터셋에서 샘플링된 것과 같은 새로운 샘플을 생성할 수 있다.  
+VAE의 구조는 아래의 그림과 같다.  
+![DL_7](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/DL_7/image_6.png?raw=true)  
+
