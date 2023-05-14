@@ -7,10 +7,10 @@ export const Container = styled.section`
     width: 100%;
     margin-top: 7rem;
     display: flex;
+    align-items: space-between;
+    justify-content: space-between;
     gap: 1.5rem;
 
-    padding-bottom: 8rem;
-    border-bottom: 3px solid ${({ theme }) => theme.primary};
 
     @media (max-width: 1000px) {
       gap: 1rem;
