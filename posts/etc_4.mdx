@@ -1,0 +1,108 @@
+---
+title: gcp에서 mysql 사용하기
+date: 2023-01-19
+description: 캡스톤디자인용 db서버 구축하는법
+tag: [gcp, mysql, cloud compute]
+---  
+
+캡스톤디자인 프로젝트에서 gcp cloud compute에서 mysql을 설치하고 배포하는 작업이 필요했다.  
+용도로는 회원정보와 음식칼로리 데이터 저장이다.  
+우선 음식칼로리 데이터는 AI hub에서 excel파일로 다운받은 상태이다.  
+  
+## GCP Cloud Compute에서 MySQL 설치하기  
+VM인스턴스를 생성하고 난 뒤, Cloud NAT를 사용하여 네트워크 주소 변환을 설정하고 관리하려면 다음과 같이 따라하면 된다.  
+1. Google Cloud Console에서 **Cloud NAT**페이지로 이동
+2. **시작하기** 또는 **Cloud NAT 게이트웨이 만들기**
+3. **게이트웨이 이름**에 nat-simple-configuration을 입력
+4. NAT 게이트웨이의 **VPC 네트워크**에 **기본**을 선택
+5. NAT 게이트웨이의 **리전**에 인스턴스 생성에서 선택한 리전을 선택
+6. **Cloud Router**에 **새 라우터 만들기**를 선택
+7. 대화상자에서 라우터 **이름**(nat-router-simple-configuration)을 입력하고 **만들기** 클릭
+8. **고급 구성**을 클릭
+9. **Stackdriver Logging**에서 **변환 및 오류**를 선택. 그러면 모든 로그가 Cloud Logging으로 전송됨
+10. **만들기**를 클릭  
+  
+이제 Ubuntu를 기준으로 MySql을 설치한다.  
+1. apt-get 패키지 관리자를 업데이트한다.  
+```bash
+sudo apt-get update
+```
+2. MySQL을 설치. 설치 과정에서 MYSQL 서비스가 자동으로 시작
+```bash
+sudo apt-get -y install mysql-server
+```
+3. 기본적으로 Ubuntu 배포판에서 mysql은 auth_socket 플러그인을 사용하여 root사용자를 인증함. 이 쿼리를 실행하여 이 기본 구성을 확인.  
+```bash
+echo "SELECT user, authentication_string, plugin, host
+      FROM mysql.user WHERE user='root' ; " \
+      | sudo mysql -t -u root
+```
+출력에는 localhost에서 연결하는 root 사용자가 auth_socket 플러그인을 사용하는 것으로 표시됨  
++------+-----------------------+-------------+-----------+
+| user | authentication_string | plugin      | host      |
++------+-----------------------+-------------+-----------+
+| root |                       | auth_socket | localhost |
++------+-----------------------+-------------+-----------+  
+4. 이 설정을 변경하고 루트 비밀번호를 추측하기 어려운 비밀번호로 변경.  
+```bash
+export PASSWORD=`uuidgen`; echo "Root password is : $PASSWORD"
+echo "ALTER USER 'root'@'localhost'
+      IDENTIFIED WITH mysql_native_password BY '$PASSWORD'" \
+      | sudo mysql -u root
+```
+출력에 새 루트 비밀번호가 포함됨.  
+연결할 때는 다음과 같은 명령어로 접속하고 비밀번호를 입력하면 된다.  
+```bash
+sudo mysql -u root -p
+```
+## 데이터베이스와 테이블 생성하기  
+이제 mysql에 접속하여 데이터베이스를 생성하고 영양소 테이블을 생성해준다.  
+데이터베이스는 다음 명령어로 생성해준다.  
+```bash
+CREATE DATABASE yaming default CHARACTER SET UTF8;
+SHOW DATABASES; #생성된 데이터베이스 확인
+```
+한글을 사용할 수 있는 UTF8로 문자열을 저장하는 데이터베이스를 생성했다.  
+이제 이 데이터베이스의 권한설정과 사용법은
+```bash
+GRANT ALL PRIVILEGES ON yaming.* TO testuser@localhost IDENTIFIED BY 'yaming';
+EXIT;
+mysql -u testuser -p
+USE yaming;
+```
+- GRANT는 사용자에게 데이터베이스의 사용 권한을 적용함
+- ALL PRIVILEGES는 데이터베이스에 대한 모든 권한임 (DB 삭제도 가능) ON yaming.* 권한 대상은 yaming이며, yaming.* 이라하는 것은 yaming의 모든 테이블을 의미. TO testuser@localhost 사용 권한을 받는 사용자는 testuser이며(없는 유저라는 새롭게 생성)
+localhost는 말 그대로 로컬에서만 연결 가능(127.0.0.1)
+- IDENTIFIED BY 'yaming' 사용자의 비밀번호 설정(localhost가 아닌 외부에서 접근하려고 한다면 접근 권한을 따로 설정해주면 가능)
+- exit 현재 연결된 mysql을 닫음(현재에는 root권한으로 로그인 되어있었고 방금 사용자로 mysql에 접속하기 위함)
+- use yaming 해당 사용자가 yaming이라는 데이터베이스를 사용한다는 의미 (하나의 사용자는 여러 데이터베이스를 사용 가능)
+  
+## CSV파일을 DB에 등록하기  
+이제 미리 받아놓은 excel파일을 gcp cloud compute 인스턴스에 업로드 해야한다.  
+브라우저 ssh를 통해 접속하면 상단에 업로드와 다운로드 버튼이 보이는데 업로드 버튼을 눌러 파일을 업로드 해주면 된다.  
+업로드 될 때 저장되는 경로는 /home/사용자이름 이다.  
+그 전에 내가받은 excel파일을 한글이 깨지지 않게 utf-8로 변환하고 csv로 바꾸고 업로드를 해야 한다.  
+파일을 excel로 연 다음, 파일->내보내기->파일 형식 변경을 통해 csv파일로 바꿔준다.  
+그 다음, 새로 저장된 csv파일을 메모장으로 열어주고 다른이름으로 저장할 때 모든파일로 지정한 뒤, 인코딩을 UTF8로 변경하고 csv형식으로 저장해주면 된다.  
+이렇게 바꿔준 파일을 업로드를 해주고 이제 DB에 등록해야 한다.  
+DB에 저장하기전에 csv의 형식에 맞는 테이블을 생성해주어야 한다. 테이블 생성코드는 개발했던 명령어 기준으로 아래와 같다.  
+```bash
+create table FoodData (음식이름 VARCHAR(10), 중량 INT(3), 에너지 DOUBLE, 탄수화물 DOUBLE, 당류 DOUBLE, 지방 DOUBLE, 단백질 DOUBLE, 칼슘 DOUBLE, 인 DOUBLE, 나트륨 DOUBLE, 칼륨 DOUBLE, 마그네슘 DOUBLE, 철 DOUBLE, 아연 DOUBLE, 콜레스테롤 DOUBLE, 트랜스지방 DOUBLE);
+```
+이렇게 테이블을 생성해주면 파일을 import하여 데이터를 삽입해준다.  
+```bash
+LOAD DATA LOCAL INFILE '/home/jwsjws99/yaming/nutritional_data.csv' INTO TABLE FoodData CHARACTER SET UTF8 FIELDS TERMINATED BY ',' IGNORE 1 ROWS;
+```
+이러면 영양소데이터 DB는 완성이다.  
+  
+## GCP 외부접속 포트 설정하기  
+다음은 해당 DB를 외부에서도 접속하도록 설정하는 방법이다.  
+GCP메뉴 중 VPC 네트워크 - 방화벽 메뉴에 들어간다.  
+기본적으로 ssh, rdp 등을 위해 기본포트가 구성되어 있다. 여기에 접속 가능한 포트를 추가해주면 된다.  
+방화벽 규칙 만들기를 누른다. 방화벽 규칙 이름은 원하는대로 지정한다.  
+대상은 어떤 인스턴스에 해당 규칙을 적용할지이다. 인스턴스가 여러개가 아니라면 네트워크의 모든 인스턴스로 지정한다.  
+소스필터/범위는 접속이 가능한 IP를 설정해주는 것이다. 0.0.0.0/0 으로 지정하면 전세계 모든 곳에서 접속이 가능하다.  
+프로토콜 및 포트에서 접속을 허용할 IP를 지정해준다. (필자는 5000번으로 지정)
+입력이 모두 되었으면 만들기를 눌러 규칙을 생성해 준다.  
+
+이로써 기본적인 DB구성은 끝났다. 다음 게시글에는 FastAPI를 이용한 DB이용에 대해 작성할 계획이다.  
