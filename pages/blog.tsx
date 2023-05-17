@@ -74,9 +74,20 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
   );
 }
 
-function TagBtns(){
+function TagBtns(viewposts){
+  let resulttags = []
+  let deduplicationtags = []
+  let tags = []
+  viewposts.forEach(e => {
+    tags.push(e['tag']);
+  });
+  const flattags = [].concat(...tags);
+  
+  deduplicationtags = flattags.filter((v, i) => flattags.indexOf(v) === i);
+  resulttags = deduplicationtags.map((tag, index)=>(<p key={index} className="tagstyle py-0.5 px-2 rounded-md bg-blue-400">{tag}</p>))
   return(
     <>
+      {resulttags}
     </>
   );
 }
@@ -86,17 +97,18 @@ function TagBtns(){
 export default function Blog({ posts }: InferGetStaticPropsType<typeof getStaticProps>){
 
   const [viewposts, setviewposts] = useState(posts)
-
+  // const [taglist, settaglist] = useState<string[]>([])
   useEffect(()=>{
 
   },viewposts)
 
+
     return(
       <Container>
-        <div>
-          <TagBtns />
+        <div className="text-xs inline-flex items-center font-bold leading-sm uppercase px-1 py-1 text-blue-700">
+          {TagBtns(viewposts)}
         </div>
-        <div className="mt-10 flex flex-col items-center">
+        <div className="mt-10 md:flex flex-col items-center">
           <PaginatedItems itemsPerPage={10} posts={viewposts}/>
         </div>
       </Container>
