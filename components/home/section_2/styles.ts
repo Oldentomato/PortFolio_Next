@@ -36,6 +36,7 @@ export const ItemContainer = styled.div`
     justify-content: flex-start;
     border-radius: 0.5rem;
     box-shadow: -3px 3px 3px #7125e8;
+    white-space: pre-wrap;
 
     max-width: 19rem;
 
@@ -60,6 +61,7 @@ export const ItemContainer = styled.div`
       color: ${({ theme }) => theme.textLight};
       font-size: 1rem;
       font-weight: 300;
+      white-space: pre-wrap;
     }
   }
 
@@ -77,6 +79,7 @@ export const ItemContainer = styled.div`
     > div {
       height: 15rem;
       padding-top: 1.5rem;
+      white-space: pre-line;
 
       h1 {
         font-size: 1.2rem;
@@ -89,6 +92,7 @@ export const ItemContainer = styled.div`
 
       p {
         font-size: 0.9rem;
+        
       }
     }
   }
@@ -117,6 +121,7 @@ export const ItemContainer = styled.div`
 
       p {
         font-size: 1rem;
+        
       }
     }
   }
