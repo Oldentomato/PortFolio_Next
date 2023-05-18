@@ -16,6 +16,23 @@ export const Post = defineDocumentType(() => ({
     description: { type: "string", required: true },
     tag: { type: 'json', required: true },
   },
+  computedFields: {
+    slug: {
+      type: "string",
+      resolve: (post) => {
+        const parts = post._raw.flattenedPath.split("/");
+        return parts[parts.length - 1];
+      },
+    },
+    url: {
+      type: "string",
+      resolve: (post) => {
+        const parts = post._raw.flattenedPath.split("/");
+        const slug = parts[parts.length - 1];
+        return `/blog/${slug}`;
+      },
+    },
+  },
 }));
 
 export default makeSource({

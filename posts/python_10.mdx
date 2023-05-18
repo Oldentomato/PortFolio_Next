@@ -59,4 +59,18 @@ intsum(*ints, *nums) #불가능
 ## 키워드 가변인수
 키워드 가변인수를 가변 개수 전달할 때는 인수목록에 **기호를 붙인다.  
 호출원에서 여러 개의 키워드 인수를 전달하면 인수의 이름과 값의 쌍을 사전으로 만들어 전달한다.  
+```python
+def calcstep(**args):
+    begin = args['begin']
+    end = args['end']
+    step = args['step']
+
+    sum = 0 
+    for num in range(begin, end + 1, step):
+        sum += num
+    return sum
+print("3 ~ 5", calcstep(begin = 3, end = 5, step = 1))
+print("3 ~ 5", calcstep(step = 1, end = 5, begin = 3))
+```
+
 
