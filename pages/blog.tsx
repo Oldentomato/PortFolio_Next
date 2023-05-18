@@ -84,7 +84,7 @@ function TagBtns(viewposts){
   const flattags = [].concat(...tags);
   
   deduplicationtags = flattags.filter((v, i) => flattags.indexOf(v) === i);
-  resulttags = deduplicationtags.map((tag, index)=>(<p key={index} className="tagstyle py-0.5 px-2 rounded-md bg-blue-400">{tag}</p>))
+  resulttags = deduplicationtags.map((tag, index)=>(<p key={index} className="tagstyle py-0.5 px-2 rounded-md bg-blue-400 mr-1 mt-1">{tag}</p>))
   return(
     <>
       {resulttags}
@@ -92,6 +92,12 @@ function TagBtns(viewposts){
   );
 }
 
+const style = {
+  width : "100%",
+  display : "flex",
+  flexWrap: "wrap",
+  marginTop: "30px"
+}
 
 
 export default function Blog({ posts }: InferGetStaticPropsType<typeof getStaticProps>){
@@ -102,10 +108,11 @@ export default function Blog({ posts }: InferGetStaticPropsType<typeof getStatic
 
   },viewposts)
 
-
+  // "text-xs inline-flex items-center font-bold leading-sm uppercase px-1 py-1 text-blue-700"
     return(
       <Container>
-        <div className="text-xs inline-flex items-center font-bold leading-sm uppercase px-1 py-1 text-blue-700">
+        <div style = {style}>
+           
           {TagBtns(viewposts)}
         </div>
         <div className="mt-10 md:flex flex-col items-center">
