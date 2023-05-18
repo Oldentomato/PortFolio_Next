@@ -95,7 +95,7 @@ function TagBtns(viewposts){
 const style = {
   width : "100%",
   display : "flex",
-  flexWrap: "wrap",
+  flexWrap: "wrap" as "wrap", //typescript때문
   marginTop: "30px"
 }
 
@@ -112,7 +112,6 @@ export default function Blog({ posts }: InferGetStaticPropsType<typeof getStatic
     return(
       <Container>
         <div style = {style}>
-           
           {TagBtns(viewposts)}
         </div>
         <div className="mt-10 md:flex flex-col items-center">
