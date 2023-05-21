@@ -1,0 +1,82 @@
+---
+title: 파이썬 문법정리 4
+date: 2023-05-21
+description: 추가로 알게된 문법들에 대해 정리
+tag: [파이썬, 문법]
+---  
+
+## 사전 관리  
+사전의 키, 값 목록을 얻으려면 keys, values 메서드를 호출한다. keys 메서드는 dict_key라는 리스트 객체를 리턴하며 이 리스트에는 키의 목록만 들어있다. values 메서드는 dict_values라는 리스트 객체를 리턴하며 이 안에는 값의 목록만 들어 있다.  
+items 메서드는 키와 값의 쌍을 튜플로 묶은 dict_items 객체를 리턴한다.  
+```python
+dic = {'boy' : '소년', 'school' : '학교', 'book' : '책'}
+print(dic.keys())
+print(dic.values())
+print(dic.items())
+#실행결과: 
+dict_keys(['book', 'boy', 'school'])
+dict_valuse(['책', '소년', '학교'])
+dict_items(['book', '책'), ('boy', '소년'), ('school', '학교')]
+```
+파이썬 3.0 이전에는 목록을 직접 가지는 리스트를 리턴했지만 내부에서 거대한 리스트를 만드는 데 메모리와 시간이 너무 많이 소모되어 3.0에서는 값을 구하는 객체를 리턴하는 것으로 변경되었다.  
+dict_*객체는 리스트처럼 순회 가능하여 값을 순서대로 읽을 수 있다.   
+```python
+dic = {'boy': '소년', 'school': '학교', 'book': '책'}
+keylist = dic.keys()
+for key in keylist:
+  print(key)
+ ```
+그러나 진짜 리스트는 아니어서 append, insert 등의 편집 함수를 호출할 수는 없다.  
+keys는 키의 목록을 조사하는 것이 목적일 뿐, 굳이 편집 가능한 리스트로 변환할 필요는 없다.  
+정 리스트로 만들려면 list()함수로 변환한다.  
+```python
+keylist = list(dict.keys())
+```
+update 메서드는 두 개의 사전을 병합한다. 인수로 사전이 호출 사전에 병합되어 합쳐진다.  
+```python 
+dic = {'boy': '소년', 'school': '학교', 'book': '책'}
+dic2 = ['student': '학생', 'teacher': '선생님', 'book': '서적'}
+dic.update(dic2)
+print(dic)
+#실행결과:
+{'boy': '소년', 'teacher': '선생님', 'student': '학생', 'school': '학교', 'book': '서적'}
+```
+dic에 dic2를 병합하면 dic2에 있는 단어가 dic에 삽입된다. 중복된 키가 있으면 병합되는 키의 값이 적용된다.  
+book은 dic에도 있고 dic2에도 있는데 이때는 dic2의 값이 적용되어 dic의 book키가 '서적'으로 바뀐다.  
+dict함수는 빈 사전을 만들기도 하고 다른 자료형을 사전으로 변환하기도 한다. 2차원 리스트를 사전으로 바꿀 수 있는데 내부 리스트의 첫 요소는 키가 되고 두 번째 요소는 값이 된다.  
+다름은 영어 단어와 한글 해석의 2차원 리스트를 사전으로 변환한다.  
+```python
+li = [['boy', '소년'], ['school', '학교'], ['book', '책']]
+dic = dict(li)
+print(dic)
+#실행결과:
+{'boy': '소년', 'school': '학교', 'book': '책'}
+```
+리스트에 중복되는 키가 있으면 뒤쪽에 있는 키의 값이 적용된다. 구조만 맞다면 튜플도 사전으로 바꿀 수 있다.  
+컬렉션은 값의 집합이라는 면에서 공통성이 있어 상호 변환이 자유로운 편이다.  
+
+##사전의 활용  
+사전은 키의 중복을 허락하지 않는다는 점과 연관된 정보를 저장한다는 면에서 무척 실용적이다.  
+이 특성을 이용하면 대량의 관련 정보를 저장할 수 있을 뿐만 아니라 빠른 속도로 검색까지 할 수 있다. []괄호만으로 추가 및 수정이 가능해 사용하기도 쉽다.  
+다음 코드는 팝송 가사에 등장하는 알파벳 문자의 출현 횟수를 세는 코드이다.  
+여러 가지 방법이 있지만 사전을 사용하는 것이 가장 깔끔하고 쉽다.  
+```python
+song = """by the rivers of babylon, there we sat down
+yeah we wept, when we remember zion.
+when the wicked carried us away in captivity
+required from us a song
+now how shall we sing the lord's son in a strnage land"""
+
+alphabet = dict()
+for c in song:
+  if c.isalpha() == False:
+    continue
+  c = c.lower()
+  if c not in alphabet:
+    alphabet[c] = 1
+  else:
+    alphabet[c] += 1
+print(alphabet)
+#실행결과:
+{'b': 4, 'y': 5, 'y':, 9, 't': 9, 'h': 22 ...
+```
