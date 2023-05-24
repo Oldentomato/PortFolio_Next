@@ -25,7 +25,7 @@ export default function ProjectItem({data}:any){
 
     return (
         <div className="project-card">
-            <Image src={imgSrc} className="rounded-t-xl" alt="cover image" width={100} height={50} layout="responsive" objectFit="cover" quality={100}/>
+            <Image src={imgSrc} className="rounded-t-xl" alt="cover image" width={40} height={40} layout="responsive" objectFit="cover" quality={100}/>
             <div className="p-4 flex flex-col">
                 <h1 className="text-2xl font-bold">{title}</h1>
                 <h3 className="mt-4 text-xl">{description}</h3>
