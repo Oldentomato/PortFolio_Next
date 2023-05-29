@@ -74,23 +74,7 @@ function PaginatedItems({ itemsPerPage ,posts}: InferGetStaticPropsType<typeof g
   );
 }
 
-function TagBtns(viewposts){
-  let resulttags = []
-  let deduplicationtags = []
-  let tags = []
-  viewposts.forEach(e => {
-    tags.push(e['tag']);
-  });
-  const flattags = [].concat(...tags);
-  
-  deduplicationtags = flattags.filter((v, i) => flattags.indexOf(v) === i);
-  resulttags = deduplicationtags.map((tag, index)=>(<p key={index} className="tagstyle py-0.5 px-2 rounded-md bg-blue-400 mr-1 mt-1">{tag}</p>))
-  return(
-    <>
-      {resulttags}
-    </>
-  );
-}
+
 
 const style = {
   width : "100%",
@@ -103,16 +87,42 @@ const style = {
 export default function Blog({ posts }: InferGetStaticPropsType<typeof getStaticProps>){
 
   const [viewposts, setviewposts] = useState(posts)
+  const viewtaglist = posts;
   // const [taglist, settaglist] = useState<string[]>([])
   useEffect(()=>{
 
-  },viewposts)
+  },[viewposts])
+
+  const changeviewposts = (tag: any) =>{
+    const newarr = posts.filter((value,index,arr)=>{
+      return value['tag'].includes(tag);
+    })
+    setviewposts([...newarr]);
+  }
+
+  const TagBtns = (viewposts) =>{
+    let resulttags = []
+    let deduplicationtags = []
+    let tags = []
+    viewposts.forEach(e => {
+      tags.push(e['tag']);
+    });
+    const flattags = [].concat(...tags);
+    
+    deduplicationtags = flattags.filter((v, i) => flattags.indexOf(v) === i);
+    resulttags = deduplicationtags.map((tag, index)=>(<p key={index} onClick={()=>changeviewposts(tag)} className="tagstyle py-0.5 px-2 rounded-md bg-blue-400 mr-1 mt-1 cursor-pointer">{tag}</p>))
+    return(
+      <>
+        {resulttags}
+      </>
+    );
+  }
 
   // "text-xs inline-flex items-center font-bold leading-sm uppercase px-1 py-1 text-blue-700"
     return(
       <Container>
         <div style = {style}>
-          {TagBtns(viewposts)}
+          {TagBtns(viewtaglist)}
         </div>
         <div className="mt-10 md:flex flex-col items-center">
           <PaginatedItems itemsPerPage={10} posts={viewposts}/>
