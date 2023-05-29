@@ -93,6 +93,12 @@ create table FoodData (음식이름 VARCHAR(10), 중량 INT(3), 에너지 DOUBLE
 ```bash
 LOAD DATA LOCAL INFILE '/home/jwsjws99/yaming/nutritional_data.csv' INTO TABLE FoodData CHARACTER SET UTF8 FIELDS TERMINATED BY ',' IGNORE 1 ROWS;
 ```
+추가로 GCP에서 LOCAL INFILE을 하게 되면  
+ERROR 2068 (HY000) at line 2: LOAD DATA LOCAL INFILE file request rejected due to restrictions on access.  
+라는 에러가 뜨는데 이는 LOAD DATA LOCAL에 잠재적인 보안 문제가 있어 서버와 클라이언트 측에 보안 요구사항이 존재하는 것이다.  
+MySQL서버측에서는 SET GLOBAL local_infile = true; 로 하면 된다고 한다.  
+그럼에도 해결이 되지 않는다면 mysql에 접속할 떄 아래와 같은 명령어로 접속해주면 된다.  
+mysql -u root -p --local-infile
 이러면 영양소데이터 DB는 완성이다.  
   
 ## GCP 외부접속 포트 설정하기  
