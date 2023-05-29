@@ -11,7 +11,7 @@ function ExperienceItems() {
       <h3 className="pt-6 text-center font-header text-xl font-medium text-black sm:text-2xl lg:text-3xl">
         Here&apos;s what I did before activities
       </h3>
-      <section >
+      <section>
         <Experience
           year="2016"
           title="Game Develop"
