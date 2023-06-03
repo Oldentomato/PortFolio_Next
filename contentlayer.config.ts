@@ -6,6 +6,7 @@ import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
 
 
+
 export const Post = defineDocumentType(() => ({
   name: "Post",
   contentType: "mdx",
