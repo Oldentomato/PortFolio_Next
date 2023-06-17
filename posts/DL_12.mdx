@@ -1,0 +1,68 @@
+---
+title: ONNX란?
+date: 2023-06-17
+description: 딥러닝 모델저장방식 ONNX에 대하여
+tag: [딥러닝]
+---  
+
+## ONNX란?  
+ONNX(Open Neural Network Exchange)는 Tensorflow, Pytorch와 같은 서로 다른 DNN 프레임워크 환경에서 만들어진 모델들을 서로 호환해서 사용할 수 있도록 도와주는 공유 플랫폼이다.  
+예를 들어, Tensorflow에서 모델을 만들고, 이를 ONNX그래프로 export 하면 Pytorch와 같은 다른 프레임워크에서도, 해당 모델을 import해서 사용할 수 있다.  
+
+## ONNX 사용 과정  
+![DL_1](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2F3cSbe%2FbtrrwfYkfM4%2FtdXyMOaeJhddQaeG3XTLu1%2Fimg.png)  
+위 그림은 Pytorch 모델을 ONNX 그래프로 export하는 전체 과정을 도식화 한 것이다. 
+진행순서
+- 첫 번째  
+  - Pytorch모델과 Sample input을 인자로 하여, torch.onnx.export함수를 호출한다.  
+  - Pytorch의 JIT컴파일러를 통해서, Trace 혹은 Script를 생성한다.  
+  - Pytorch모델의 forward propagation 시에 호출되는 함수 및 연산들에 대한 최적화된 그래프인 Torch IR을 만든다.  
+    - Trace나 Script는 Pytorch의 nn.Module을 상속하는 모델의 forward함수에서 실행되는 코드들에 대한 IR을 담고 있다.  
+- 두 번째  
+  - 생성된 trace / script (Torch IR)는, ONNX Exporter를 통해서 ONNX IR로 변환되고, 여기에서 한번 더 Graph Optimization이 이루어진다.  
+- 세 번째  
+  - 최종적으로 생성된 ONNX그래프는 .onnx포맷으로 저장된다.  
+
+## 텐서플로우 기준 사용법  
+- tf2onnx 설치
+```bash
+pip install -U tf2onnx
+```
+- 모델 저장
+```python
+model.save('tf_model') # 모델 저장
+```
+
+- ONNX로 모델변환
+```bash
+python -m tf2onnx.convert --saved-model tf_model --output model.onnx --opset 12
+```
+opset옵션은 onnx의 버전으로 추측된다.  
+
+- ONNX로 추론하기
+```python
+import onnxruntime
+from tensorflow.keras.datasets import mnist
+import numpy as np
+
+# 추론을 위한 MNIST 데이터 불러오기
+(_, _), (test_x, test_y) = mnist.load_data()
+# 학습시 입력과 데이터 형태를 맞춰주었다. 이전 학습시 float32는 하지 않았지만 자동적으로 변환되었던 부분이다.
+test_x = (test_x / 255.0).astype('float32')
+
+# 모델 불러오기
+ort_model = onnxruntime.InferenceSession('model.onnx')
+# 추론하기
+result = ort_model.run(None, {'flatten_input': test_x[0:1]})[0]
+
+print("predict: ", np.argmax(result))
+print("real: ", test_y[0])
+
+#   >>>
+### predict:  7
+### real:  7
+```
+
+onnx 모델은 기존 h5모델이나 pt모델의 추론속도보다 약 두배정도 빠르다고 한다.  
+
+[onnx에 대한 참고](https://wooono.tistory.com/415)
