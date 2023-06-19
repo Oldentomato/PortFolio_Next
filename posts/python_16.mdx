@@ -1,0 +1,150 @@
+---
+title: 파이썬 문법정리 8
+date: 2023-06-19
+description: 추가로 알게된 문법들에 대해 정리(클래스)
+tag: [파이썬, 문법]
+---  
+
+## 클래스의 상속  
+상속은 기존 클래스를 확장하여 멤버를 추가하거나 동작을 변경하는 방법이다.  
+비슷한 클래스가 있다면 처음부터 다시 만들 필요 없이 상속받아 약간씩 확장 및 변형하여 사용한다.  
+상속을 받을 때는 클래스 이름 다음의 괄호 안에 부모 클래스의 이름을 지정한다.  
+```python
+class 이름(부모):
+    ...
+```
+새로 정의되는 자식 클래스는 부모 클래스의 모든 멤버를 물려받는다.  
+일단 물려받은 후 추가로 멤버를 더 정의하거나 동작을 수정할 수 있다.  
+다음 예제는 사람을 표현하는 Human 클래스를 상속받아 학생을 표현하는 Student 클래스를 정의한다.  
+```python
+class Human:
+    def __init__(self, age, name):
+        self.age = age
+        self.name = name
+
+    def intro(self):
+        print(str(self.age) + "살" + self.name + "입니다")
+
+class Student(Human):
+    def __init__(self, age, name, stunum):
+        super().__init__(age, name)
+        self.stunum = stunum
+
+    def intro(self):
+        super().intro()
+        print("학번 : " + str(self.stunum))
+
+    def study(self):
+        print("하늘천 따지 검을현 누를황")
+
+kim = Human(29, "김상형")
+kim.intro()
+lee = Student(34, "이승우", 930011)
+lee.intro()
+lee.study()
+#실행결과
+29살 김상형입니다
+34살 이승우입니다
+학번 : 930011
+하늘천 따지 검을현 누를황
+```
+자식 클래스에서 부모의 메서드를 호출할 때는 super()메서드로 부모를 구해 호출한다.  
+자식은 모든 것을 직접 처리할 필요 없이 부모에 이미 정의되어 있는 기능을 호출하여 사용한다.  
+Student의 __init__는 인수로 전달받은 나이와 이름을 초기화하기 위해 부모의 생성자인 super.__init__를 호출한다.  
+부모의 생성자를 호출하는 대신 직접 멤버를 초기화할 수도 있다.  
+```python
+def __init__(self, age, name, stunum):
+    self.age = age
+    self.name = name
+    self.stunum = stunum
+```
+그러나 이렇게 하면 부모가 변경될 때 자식도 같이 수정해야 하는 불편함이 있어 상속의 장점이 반감되며 코드를 관리하기 어렵다.  
+부모로부터 물려받은 멤버는 부모의 생성자에게 초기화를 위임하고 직접 추가한 멤버만 초기화하는 것이 정석이다.  
+파이썬은 여러 개의 부모로부터 클래스를 파생시키는 다중 상속까지 지원한다.  
+그러나 다중 상속은 프로그램을 복잡하게 만드는 부작용이 있어 컴파일 언어조차조 잘 사용하지 않는 말썽 많은 기능이다.  
+꼭 필요한 경우도 있지만 가급적이면 사용하지 않는 것이 바람직하다.  
+  
+## 액세서  
+객체가 부품으로서의 안정성을 확보하려면 외부의 부주의한 사용으로부터 자기 자신을 방어해야 한다.  
+이를 정보 은폐 기능이라고 하는데 전통적인 객체지향 언어에 비해 파이썬은 공식적으로 정보 은폐를 지원하지 않는다.  
+그래서 파이썬 클래스의 멤버는 모두 공개되어 있으며 외부에서 누구나 액세스할 수 있다.  
+멤버를 외부에서 마음대로 조작하게 내버려두는 것보다는 일정한 규칙을 마련하고 안전하게 액세스하도록 해야 한다.  
+여러 가지 방법이 있는데 멤버 값을 대신 읽어 주는 게터(Getter)메서드와 변경하는 세터(Setter)메서드를 정의하는 것이 보편적이다.  
+```python  
+class Date:
+    def __init__(self, month):
+        self.month = month
+    def getmonth(self):
+        return self.month
+    def setmonth(self, month):
+        if 1 <= month <= 12:
+            self.month = month
+
+today = Date(8)
+today.setmonth(15)
+print(today.getmonth())
+#실행결과
+8
+```
+month멤버는 숨겨 놓고 게터, 세터만 쓰도록 한다면 객체의 안전을 어느 정도 지킬 수 있다.  
+그러나 사용자가 멤버의 이름을 알고 있으니 today.month = 123이라고 대입해 버리면 이때는 방어할 방법이 없다.  
+좀 더 안전한 방법은 멤버의 이름을 어렵게 만들고 게터, 세터를 정의한 후 property(getter, setter)형식으로 프로퍼티를 정의하는 것이다.  
+```python
+class Date:
+    def __init__(self, month):
+        self.inner_month = month
+    def getmonth(self):
+        return self.inner_month
+    def setmonth(self, month):
+        if 1 <= month <= 12:
+            self.inner_month = month
+    month = property(getmonth, setmonth)
+
+today = Date(8)
+today.month = 15
+print(today.month)
+```
+실제정보를 저장하는 멤버는 inner_month로 정의하고 month프로퍼티를 통해 내부 멤버를 액세스하는 게터, 세터와 연결한다.  
+month 프로퍼티를 읽고 쓰면 게터, 세터가 호출되어 안전하다. 프로퍼티를 통해 게터, 세터는 직접 호출할 수 있지만 today.month에 15를 대입하는 것은 허락되지 않는다.  
+데커레이터로도 프로퍼티를 정의할 수 있다.  
+메서드의 이름을 month로 쓰고 데커레이터를 붙이되 게터는 @property를 붙이고 세터는 @이름.setter를 붙인다.  
+```python
+class Date:
+    def __init__(self, month):
+        self.inner_month = month
+    @property
+    def month(self):
+        return self.inner_month
+    @month.setter
+    def month(self, month):
+        if 1 <= month <= 12:
+            self.inner_month = month
+
+today = Date(8)
+today.month = 15
+print(today.month)
+```
+데커레이터로 정의하면 액세서는 노출되지 않아 외부에서 직접 호출할 수 없으며 속성에 잘못된 값을 대입하면 거부된다.  
+세터를 정의히자 않으면 읽기 전용으로 만들 수 있다.  
+그러나 프로퍼티를 쓰더라도 숨겨진 멤버의 이름을 알고 있다면 today.inner_month = 15로 대입하는 것은 막을 수 없다.  
+숨겨진 멤버의 이름을 __로 시작하면 이 멤버를 바로 참조하지 못하도록 특수한 이름을 붙인다.  
+```python
+class Date:
+    def __init__(self, month):
+        self.__month = month
+    def getmonth(self):
+        return self.__month
+    def setmonth(self, month):
+        if 1 <= __month <= 12:
+            self.__month = month
+    month = property(getmonth, setmonth)
+
+today = Date(8)
+today.__month = 15
+print(today.month)
+```
+__가 붙으면 내부적인 실제 이름을 _클래스명__멤버명으로 복잡하게 만든다. 즉, __month는 _Date__month가 된다.  
+사용자가 이런 복잡한 이름을 알아내 실수로 대입할 위험을 막을 수 있다.  
+물론 이 숨겨진 이름도 직접 대입하면 바꿀 수 있지만 최소한 의도치 않은 실수는 막을 수 있다.  
+파이썬이 언어 차원에서 정보 은폐를 지원하지 않기 때문에 여러 가지 꼼수가 동원된다.  
+너무 복잡한 방법까지 쓸 필요는 없고 게터, 세터정도만 잘 작성해도 어느 정도의 안정성은 확보할 수 있다.  

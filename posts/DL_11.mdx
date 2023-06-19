@@ -87,7 +87,7 @@ Multi-class classification(Object detection 등)의 경우, 벡터로 처리할 
 - softmax, logistic, or tanh라면 Glorot initialization  
 - 대부분의 init method는 uniform and normal distribution의 특징을 가진다.  
 
-### BatchNotmalization  
+### BatchNormalization  
 - BatchNorm은 단순히, 각 layer의 inputs을 normalizing하는 것으로써, 모델이 평균과 스케일의 최적값을 배울 수 있게 한다. 이를 사용할 경우 dropout, l2 정규화 등을 사용할 필요가 없다.  
 - BarchNorm을 사용하면 더 높은 Learning rate를 사용해볼 수 있다.  
 - 한가지 단점은 각 계층마다 normalization을 진행하는 시간이 추가로 소요된다는 것이다.  
