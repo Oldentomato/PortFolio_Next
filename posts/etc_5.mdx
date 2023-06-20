@@ -39,7 +39,41 @@ def send_query(query:str):
 
     return rows
 ```
-연결과 쿼리실행까지 되는 코드를 함수화하여 다른곳에서 바로 쓸 수 있도록 작성했다.  
+연결과 쿼리실행까지 되는 코드를 함수화하여 다른곳에서 바로 쓸 수 있도록 작성했다. 
+
+### ai서버 도커 설정  
+다음과 같은 Dockerfile을 작성해주었다.  
+```Dockerfile
+FROM python:3.9
+COPY /api /app/api
+COPY requirements.txt requirements.txt
+
+ENV MYSQLHOST 'gcp외부 ip'
+ENV MYSQLUSER 'root'
+ENV MYSQLPASS 'sql 비밀번호'
+ENV MYSQLPORT 5000
+ENV MYSQLDB 'yaming'
+
+RUN apt-get update && \
+    python -m pip install --upgrade pip && \
+    apt-get -y install libgl1-mesa-glx && \
+    pip install -r requirements.txt
+
+WORKDIR /app
+
+RUN mkdir test_image
+
+CMD uvicorn api.api:app --host=0.0.0.0
+```
+libgl1-mesa-glx는 opencv-python을 사용할 때 필요한 모듈이다. 설치하지 않으면 에러가 발생한다.  
+
+ENV는 도커 컨테이너 내부에 쓸수있는 환경변수이다. 실제코드에서는 아래와 같이 작성하면 참조할 수 있다.  
+```python 
+import os
+import pymysql
+con = pymysql.connect(host=os.environ['MYSQLHOST']...)
+```
+
 
 ### 이미지 업로드  
 이제 fastapi를 이용하여 이미지 업로드와 ai로 검증하는 코드를 작성한다.  
@@ -89,7 +123,74 @@ async def imagetest(file: UploadFile, userid: int):
 uvicorn main:app --reload
 - main: 파일 main.py
 - app: main.py 내부의 app = FastAPI() 줄에서 생성한 오브젝트
-- --reload: 코드 변경 후 서버 재시작. 개발에만 사용.
+- --reload: 코드 변경 후 서버 재시작. 개발에만 사용.  
+
+### detect()함수 내용
+```python
+import torch
+import cv2
+import numpy as np
+import sys
+
+sys.path.append(r"/app")
+from models.experimental import attempt_load
+from utils.general import non_max_suppression,scale_coords
+from utils.torch_utils import time_synchronized
+from modules.get_img import letterbox
+
+
+class Detect_Image:
+    def __init__(self, model_name:str, img_path:str, weight_path:str):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model_name = model_name
+        self.img_path = img_path
+        self.weight_path = weight_path
+
+
+
+    def detect(self):
+        model = attempt_load(self.weight_path, map_location = self.device)
+        print("model loaded")
+        image = cv2.imread(self.img_path)
+        stride = int(model.stride.max())
+        # Padded resize
+        img = letterbox(image, 512, stride=stride)[0]
+
+        # Convert
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = np.ascontiguousarray(img)
+
+        result_image = torch.from_numpy(img).to(self.device)
+        result_image = result_image.float()
+        result_image /= 255.0
+        if result_image.ndimension() == 3:
+            result_image = result_image.unsqueeze(0)
+
+        print("image loaded")
+
+        t1 = time_synchronized()
+        with torch.no_grad():
+            pred = model(result_image)[0]
+        t2 = time_synchronized()
+
+        pred = non_max_suppression(pred, 0.01, 0.45) # conf_thres, iou_thres
+        t3 = time_synchronized()
+
+        for i, det in enumerate(pred): #detections per image
+            if len(det):
+                result_cls = []
+                result_conf = []
+
+                for *xyxy,conf,cls in reversed(det):
+                    result_cls.append(int(cls.item()))
+                    result_conf.append(conf.item())
+
+                max_conf_index = result_conf.index(max(result_conf))
+                return result_cls[max_conf_index]
+            else:
+                return None
+```
+detect()코드는 기존 yolo코드에서 가져온 것이고 단일 이미지의 객체인식만(위치는 필요없음) 필요하기 때문에 코드를 개량했다. 하지만 깔끔하지는 못하다.  
 
 ### 모듈 경로  
 fastapi를 이용하여 프로그램을 실행하면 모듈경로 에러가 발생하게 된다.  
@@ -98,5 +199,7 @@ fastapi를 이용하여 프로그램을 실행하면 모듈경로 에러가 발�
 sys.path.append(r"D:\\yaming_dataset\\Yaming_AI\\api")
 ```
 
-
+이번 내용은 pytorch의 yolo모델을 기준으로 작성했으나 모델의 학습속도에 비해 너무 낮은 성능을 보여주어 다른 방향을 선택했다.  
+다중 객체인식을 포기하고 단일 객체인식으로 바꾸고 텐서플로우의 vgg모델을 이용하기로 했다.  
+다음 게시물에 tensorflow training에 대한 내용과 배포하는것 까지 작성하도록 하겠다.  
     
