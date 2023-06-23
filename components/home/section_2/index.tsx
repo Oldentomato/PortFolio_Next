@@ -19,7 +19,7 @@ function ExperienceItems() {
         />
         <Experience
           year="2021"
-          title="Activies"
+          title="Activites"
           description="폭스러닝 딥레이서 행사 참여<br/>교내 게임제작 동아리 멘토             "
         />
         <Experience
@@ -34,7 +34,7 @@ function ExperienceItems() {
         />
         <Experience
           year="2023"
-          title="Participation"
+          title="Activites"
           description="네이버 DEVIEW 참여 <br/>ETRI 연구원 인턴                "
         />
       </section>
