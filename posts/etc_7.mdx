@@ -83,7 +83,9 @@ git push fork저장소명 --delete 브랜치명
 
 ## pull request merge conflict  
 upstream에서 코드를 가져와 작업을 마치고 origin에 푸시하여 pull request를 날리려고 보면 아래와 같은 문구가 나올 때가 있다.  
-<Can't automatically merge. Don't worry, you can stll create the pull request.>  
+```bash
+Can't automatically merge. Don't worry, you can stll create the pull request.
+```
 내가 로컬에서 작업하는 동안 누군가 upstream에 commit했기 때문에 지금 pull request를 진행할 경우 merge conflict가 발생한다는 의미이다.  
 
 ### 방법1: merge 후 PR  
