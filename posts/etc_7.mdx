@@ -1,0 +1,246 @@
+---
+title: git 협업
+date: 2023-06-28
+description: github-flow 브랜치 전략을 이용한 협업하는 법
+tag: [git]
+---  
+
+## 초기 세팅  
+타겟 프로젝트의 저장소를 자신의 저장소로 Fork한다.  
+Fork로 생성한 본인 계정의 저장소에서 주소를 복사해서 자신의 로컬 저장소에 clone한다.  
+```bash
+git clone [복사url]
+
+#예시
+git clone https://github.com/hiskfnxh/withme.git
+```
+clone한 디렉토리로 들어가서 원격 저장소를 확인한다.  
+```bash
+git remote -v 
+#출력
+origin  https://github.com/hiskfnxh/withme.git (fetch)
+origin  https://github.com/hiskfnxh/withme.git (push)
+```
+fork한 로컬 프로젝트는 origin으로 기본적으로 추가되어 있는 것을 확인할 수 있다.  
+```bash
+git remote add [별칭] [원본url]
+
+#예시
+git remote add upstream https://github.com/backtony/withme.git
+```
+원본 프로젝트를 원격 저장소로 등록해준다.  
+보통 위에서 흐른다고 하여 원본 저장소를 upstream별칭으로 지정한다.  
+
+## Branch  
+공동의 저장소로 함께 협업하기 때문에 브랜치의 활용을 잘해야 한다.  
+Local Repository에서 작업하기 전에 branch를 생성하여 그 곳에서의 작업, 수정 등을 한다.  
+```bash
+//브랜치 생성 및 이동 (ex. git checkout -b feature)
+git checkout -b 브랜치명
+
+//현재 브랜치 목록
+git branch
+```
+
+## add, commit, push  
+해당 단계에서 주의할 점은 git push 할 때 공동의 저장소가 아닌, 자신의 저장소로 하는 것이다.  
+협업할 때 공동의 저장소로 올리기 위해선 바로 올리지 않고 pull request를 통하기 때문이다.  
+```bash
+//업로드할 파일
+git add 파일명
+git commit -m "커밋메시지"
+
+git push fork저장소별칭 브랜치명 
+//ex. git push origin feature
+```
+
+## pull request  
+Github 홈페이지에서 자신의 fork 저장소로 가서 방금 올린 브랜치를 선택한 후, Contirbute를 눌러 pull request를 생성한다.  
+그럼 페이지 상단에서 자신의 저장소에서 공동의 저장소로 올라간다는 것을 확인할 수 있다.  
+이후 merge 여부까지 선택해서 진행하면 된다.  
+
+## merge 이후  
+merge까지 모두 되었다면, 이제 방금 올린 branch를 삭제하고, 동기화를 진행해야 한다.  
+그럼 원격 저장소, fork한 저장소, 로컬 저장소 모두 같은 상태가 될 것이다.  
+여기까지 했다면, 앞으로 새로운 작업 시 위에서부터 순서대로 단계를 반복하면 된다.  
+브랜치를 삭제했으니 다시 브랜치를 생성하고 작업을 시작하면 된다.  
+```bash
+//메인 브랜치로 이동
+git checkout main
+
+//upstream 동기화 (ex. git pull upstream main)
+git pull 원본 저장소명 브랜치명  
+
+//origin에 반영 (ex. git push origin main)
+git push fork저장소명 브랜치명  
+
+//로컬 브랜치 삭제
+git branch -d 브랜치명  
+
+//fork한 저장소에도 삭제 반영 (ex. git push origin --delete feature)
+git push fork저장소명 --delete 브랜치명
+```
+
+## pull request merge conflict  
+upstream에서 코드를 가져와 작업을 마치고 origin에 푸시하여 pull request를 날리려고 보면 아래와 같은 문구가 나올 때가 있다.  
+<Can't automatically merge. Don't worry, you can stll create the pull request.>  
+내가 로컬에서 작업하는 동안 누군가 upstream에 commit했기 때문에 지금 pull request를 진행할 경우 merge conflict가 발생한다는 의미이다.  
+
+### 방법1: merge 후 PR  
+이를 해결하기 위해서는 upstream의 코드를 가져와서 merge한 뒤 다시 pull request를 날리는 방법이 있다.  
+```bash
+### develop 브랜치에서 진행 ###
+
+# upstream 코드 가져오기
+git fetch upstream master
+
+# merge 
+git merge upstream/master
+```
+fetch로 가져오면 upstream/master에서 커밋이 발생한 것을 확인할 수 있다.  
+그리고 그것을 develop 브랜치에 merge해주면 충돌이 해결되는 것이다.  
+만약 merge 과정에서 내가 작업했던 내용이 upstream/master에 들어온 커밋과 겹치는 부분이 발생한다면 수정해주고 스테이징 한 뒤 continue해주면 된다.  
+```bash
+# 충돌 발생 시 해결 후 
+git add .
+git merge --continue
+```
+이제 다시 origin 에 push해서 Pull request를 진행하면 된다.  
+
+### 방법2: rebase PR  
+이 방법은 나중에 다시 다루겠다.  
+
+### 언제 무엇을 선택하는가  
+- 현재 브랜치에 커밋이 많고 master와 비슷한 코드를 수정하여 conflict날 가능성이 높다면 브랜치에서 merge한 후 PR를 보낸다.  
+- 내 브랜치에 커밋이 그리 많지 않고 깔끔한 커밋 히스토리를 남기고 싶다면(오픈 소스 등) rebase를 사용한다.  
+
+## 발생할 수 있는 다양한 상황들  
+### 소스 수정을 하다가 보니 새로운 브랜치가 아니라 가져온 그대로 작업하고 있었다.  
+아직 커밋을 하지 않은 상태이므로 그냥 새로운 브랜치를 만들면 수정하고 있는 사항들도 같이 브랜치로 옮겨진다.  
+```bash
+git checkout -b [브랜치명]
+```
+
+### 소스 수정 후 커밋도 했는데 새로운 브랜치가 아니라 가져온 그대로 작업하고 있었다.  
+현재 상태로 새로운 브랜치를 만들고, 기존 브랜치를 커밋하기 전 상태로 되돌리면 된다.  
+```bash
+git checkout -b [새로운브랜치]
+git checkout [원래 브랜치]
+git reset --hear [원본 가져온 시점 해시]
+```
+
+### 새로운 브랜치를 만들어야 하는데, develop에 아직 코드리뷰가 끝나지 않은 커밋이 포함되어 있다  
+원래 작업은 별도의 브랜치에서 수행하고 PR을 날려야 하는데 이를 잊고 별도의 브랜치에서 작업하지 않고 develop브랜치에서 작업하고 바로 커밋 후 PR을 날렸을 경우 발생하는 문제이다.  
+이 경우 기존 작업의 코드 리뷰가 끝나지 않았는데, 새로운 이슈 작업을 하기 위해 develop에서 새로운 브랜치를 만들면, 코드리뷰를 받지 않은 기존 작업의 커밋이 따라 붙게 된다.  
+이 경우에는 해당 커밋이 생성되기 전의 시점에서 새로운 브랜치를 만들면 된다.  
+예시로는,  
+![img1](https://backtony.github.io/assets/img/post/git/cowork/1/15.PNG)  
+4fee951 해시코드 지점에서 브랜치를 따고 작업했어야 했는데 잊고 계속 작업했고 PR까지 날려버렸다.  
+이제 다른 작업을 해야 하는데 브랜치를 따면 리뷰가 안된 커밋이 새로운 브랜치로 딸려오는 상황이다.  
+```bash 
+git checkout -b [새로운브랜치명] [기반이되는지점해시코드]
+
+#예시  
+git checkout -b feat 4fee951 
+```
+![img2](https://backtony.github.io/assets/img/post/git/cowork/1/16.PNG)  
+원래 브랜치를 따야하는 지점에서 새로운 브랜치를 만들어서 진행하면 된다.  
+
+### 뭘 했는지 모르겠는데 이상해졌다  
+pull을 잘못 받거나 revert를 잘못 했거나 뭘 했는지 모르겠는데 이상해졌다면 reset을 해주면 된다.  
+우선 변경 내역을 확인해야 한다.  
+```bash
+# 내역 조회  
+git reflog 
+
+내역들 ...
+...
+...
+```
+되돌아 가고 싶은 지점의 해시 코드를 골라 reset해준다.  
+```bash
+git reset --hard [해시코드]
+```
+
+### push 이후 실수를 확인했다  
+이미 public으로 나간 커밋은 reset하면 안된다.  
+fork 떠서 origin에 올린 것이라면 로컬에서 reset 후 push force로 되돌릴 수는 있다.  
+이 때는 origin은 반드시 혼자 사용하는 것이어야만 한다.  
+```bash
+git reset --hard [되돌아가고가하는 해시코드]
+git push --force origin [브랜치명]
+```
+force 옵션을 사용하면 origin에 있는 것을 무시하고 강제로 로컬에 있는 것 그대로 따라가도록 만들어 준다.  
+  
+하지만 upstream과 같이 다른 팀원과 같이 사용하는 public에 올라갔다면 reset을 하면 안된다.  
+revert하여 취소하고자 하는 커밋을 취소하는 새로운 커밋을 만들어 다시 public에 올려야 한다.  
+```bash
+git revert [취소하고자하는 커밋해시코드]
+
+# 예시
+git revert 4b72a25
+```
+
+### merge 커밋을 revert 하고 싶다  
+merge한 커밋이 public에 올라갔는데 잘못되어 시스템 상에 문제를 일으키는 것으로 밝혀진 경우, 실제 문제를 수정하기에 시간이 걸리므로 우선 merge작업 자체를 되돌려야 할 수 있다.  
+```bash
+git revert -m [남길 line] [병합 commit 해시]
+
+# 예시 
+git revert -m 1 13d9f21
+```
+그래프 상에서 왼쪽 그래프가 1번 라인, 오른쪽 그래프가 2번 라인이 된다.  
+revert하면서 살려둘 line을 명시하고 병합 커밋 해시를 주면 된다.  
+
+### 이미 커밋 했는데 커밋 메시지를 수정하고 싶다  
+```bash
+git commit --amend
+```
+엄밀히 말해 기존 커밋을 수정하는 것이 아니고 새로운 커밋을 만들어 내는 것이기 때문에 이미 public에 push되었다면 사용하면 안된다.  
+
+### 로컬에만 있어야 하는 파일이 이미 push까지 됐다  
+설정 파일과 같이 로컬에만 존재해야 하는 파일이 메인 repo까지 실수로 올렸을 때가 있다.  
+이때는 git에서는 지우면서 로컬에는 지우지 않도록 해야 한다.  
+```bash
+# git에서 제거
+git rm --cached [파일명]
+git rm -r --cached [폴더명]
+
+git commit -m "update secret"
+```
+제거하고 커밋한 뒤 다시 push하면 된다.  
+만약 로컬에서도 지우고 싶다면 cached옵션을 제거하면 된다.  
+
+### 브랜치명을 바꾸고 싶다  
+```bash
+git branch -m [old-name] [new-name]
+```
+
+### 비슷한 여러 커밋 정리하기  
+같은 주제로 작업한 커밋이 여러 개라면 깔끔한 히스토리 관리를 위래 커밋들을 squash하는 것이 바람직하다.  
+```bash
+git rebase -i [원하는지점 하나 전 해시코드]
+git rebase -i 78ac7ed
+```
+rebase하기 위해서는 원하는 시작 지점보다 하나 전의 해시코드를 입력한다.  
+
+### squash하고 싶은데 순서가 얽혀 있다  
+```bash
+git rebase -i 522ecal
+
+# 수정창
+pick 8c4f4a7 s4 
+pick 1b556ac in
+pick ca41d52 s5
+
+# 순서 변경과 설정 변경 
+pick 8c4f4a7 s4 
+s ca41d52 s5 
+pick 1b556ac in 
+```
+순서를 변경해주고 pick을 s로 바꿔서 squash해준다.  
+이후 커밋창에 메시지를 입력해주면 다음과 같이 커밋이 형성된다.  
+
+[참고 https://backtony.github.io/git/2022-06-09-git-cowork/](https://backtony.github.io/git/2022-06-09-git-cowork/)
+
+
