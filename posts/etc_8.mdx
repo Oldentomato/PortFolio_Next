@@ -30,8 +30,12 @@ def TestModel(path):
     json_response = requests.post('http://localhost:8501/v1/models/model:predict', data=data, headers=headers)
     prediction = json.loads(json_response.text)
 
-    predict_arr = np.array(prediction['predictions'])
-    result = np.argmax(predict_arr[0])
+    try:
+        predict_arr = np.array(prediction['predictions'])
+    except: 
+        return -1
+    else:
+        result = np.argmax(predict_arr[0])
 
     return category[result]
 ```
