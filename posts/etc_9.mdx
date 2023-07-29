@@ -1,0 +1,114 @@
+---
+title: fly.io를 이용한 ai서버 배포
+date: 2023-07-29
+description: fly.io를 이용한 도커서버 배포
+tag: [fly, 도커, 서버, fastapi, github-actions]
+---  
+
+## flyctl 설치  
+이 글은 ubuntu18.04를 기준으로 작성했다.  
+os별 설치 명령어는 아래와 같다.  
+mac os  
+```bash
+brew install flyctl  
+#or
+curl -L https://fly.io/install.sh | sh
+```
+Linux  
+```bash
+curl -L https://fly.io/install.sh | sh
+```
+Window  
+```bash
+iwr https://fly.io/install.psl -useb | iex
+```
+
+## fly.io 로그인  
+```bash
+flyctl auth login
+```
+위 명령어를 치면 브라우저가 열리거나 url이 뜨는데, 해당 주소로 들어가서 로그인을 하면 인증이 된다.  
+
+## 앱 런치  
+- 배포하고자 하는 프로젝트의 디렉토리로 이동한다.  
+- 런치 실행  
+```bash
+flyctl launch
+```
+런치를 하면 여러 질문들이 나오게 된다.  
+    - 앱 이름(숫자, 소문자 및 대시만 사용가능)
+    - 배포할 지역 선택 (작성자는 nrt(일본)으로 설정)
+    - postgresql 데이터베이스 (작성자는 필요없어서 스킵)
+그 다음 바로 fly.toml파일이 생성이 되고 deploy를 할 것인지 물어보게 되는데, 추가 설정을 하기 위해 no로 빠져나온다.  
+
+## fly.toml 수정  
+여기의 내용에 따라 배포하는 방식이 결정된다.  
+volume을 설정하고 싶으면 명령어로 추가를 하고 여기에 volume에 관한 설정을 작성해주면 된다.(여기서는 스킵)  
+처음에는 internal_port가 8080(default)로 되어있는데 작성자는 fastapi를 8000번으로 열었기 때문에 8000으로 수정해준다.  
+그다음 auto_stop_machines을 false로 바꿔주는데 이것은 일정시간동안 요청이 오지 않으면 자동으로 서버가 꺼지는 설정이다.  
+수정이 끝나면 flyctl deploy로 배포해주면 된다.  
+
+## machine 사양 변경  
+machine의 사양은 기본적으로 cpus 1개 ram 256mb으로 2개 구성되어있다.  
+작성자는 이미지 생성ai서버이기 때문에 높은사양이 필요해서 cpus 2개 ram 2048mb으로 변경했다. 변경법은 아래와 같다.  
+cpu
+```bash
+fly scale vm shared-cpu-2xl
+```
+ram
+```bash
+fly scale memory 2048
+```
+사양 확인
+```bash
+fly scale show
+```
+그 외의 명령어는 아래 document를 통해 확인할 수 있다.  
+[fly.io document](https://fly.io/docs/apps/scale-machine/)  
+
+## github actions를 이용한 자동배포  
+github actions를 이용하여 PR을 할 때마다 자동으로 서버를 배포할 수 있는 기능이 있다.  
+해당 프로젝트에서 .github/workflows 디렉토리들을 생성해주고 fly.yml을 생성해준다.  
+yaml의 내용은 PR을 했을 때 배포가 되도록 작성했다.  
+```yaml
+name: fly Deploy 
+on:
+    pull_request:
+        branches: ["main"]
+        types:
+        - closed
+
+jobs:
+    if_merged:
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+        - uses: actions/checkout@v2
+        - uses: superfly/flyctl-actions/setup-flyctl@master
+        - run: flyctl deploy --remote-only
+          env:
+            FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+```
+여기서 uses의 의미로는,  
+레포지토리의 소스코드를 현재 워크스페이스(환경)로 체크아웃(복사)하는 액션이다.  
+즉, 해당 레포지토리의 코드를 github actions워크플로우 내에서 사용할 수 있도록 현재 환경으로 가져온다.  
+action/checkout@v2는 github에서 공식적으로 유지 관리되는 액션 중 하나이며, v2는 액션의 버전을 나타낸다.  
+버전 번호를 명시하면 액션의 특정 버전을 사용하게 된다. 버전을 생략하면 최신버전을 자동으로 사용한다.  
+superfly/flyctl-actions/setup-flyctl@master 는 flyctl을 사용하기 위해 사용한 것이다.  
+  
+
+여기서 secrets는 해당 레포지토리->settings->secrets and variables->actions 에서 new repository secret을 통해 fly api token을 입력해주면 된다.  
+fly api token은 사이트 혹은 명령어를 통해 발급받을 수 있다. (작성자는 여기에서 인증에러가 났고 해결되면 다시 작성할 예정이다.)  
+
+## fly.io의 무료정책  
+fly.io의 무료정책은 아래와 같다.  
+| 항목 | 무료 제공량 |
+| -------- | -------- |
+| 가상 머신: 공유 cpu   | 2,340시간/월   |
+| 볼륨   | 3GB  |
+| 대역폭   | 160GB/월   |
+| IP   | 앱당 IPv6 무제한, 앱 당 IPv4 하나  |
+| 인증서   | 10개   |
+
+가상머신은 한 달에 2,340시간을 무료로 제공하는데 31을 시간으로 계산하면 744시간이니까 약 3대정도까지 최저사양으로 무난하게 돌릴 수 있다.  
