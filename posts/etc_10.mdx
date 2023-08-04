@@ -1,0 +1,84 @@
+---
+title: 우분투 cuda, cudnn 설치법
+date: 2023-08-04
+description: 우분투에서 cuda와 cudnn을 설치하는법에 대한 설명 
+tag: [우분투, cuda]
+---  
+
+## 우분투 nvidia driver 확인 및 설치  
+```bash
+apt update
+apt install -y ubuntu-drivers-common
+ubuntu-drivers devices
+```
+ubuntu-drivers-common 패키지를 설치하면 그래픽 카드 드라이버를 추천해준다.  
+
+## nvidia 드라이버 설치  
+```bash
+ubuntu-drivers devices
+sudo apt-get install nvidia-driver-(version)
+sudo apt-get install dkms nvidia-modprobe
+sudo apt-get update
+sudo apt-get upgrade
+sudo reboot
+```
+현재 내 시스템의 디바이스를 확인하고, 적절한 nvidia 드라이버를 설치한다.  
+nvidia 드라이버를 커널에 로드해주는 nvidia-modprobe도 같이 설치한다.  
+설치가 완료됐으면 리부팅한다.  
+
+```bash
+nvidia-smi
+```
+nvidia-smi를 입력해서, nvidia 드라이버 상태, 디바이스 상태 등을 확인한다.  
+
+## cuda 설치  
+cuda 설치를 위해 nvidia 개발자 사이트를 방문한다.  
+[developer.nvidia.com](https://developer.nvidia.com/cuda-toolkit-archive)  
+
+wget으로 cuda 인스톨러를 다운로드 받고, sh로 실행한다.  
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run
+sudo sh cuda_11.7.1_515.65.01_linux.run
+```
+
+설치가 완료되면, PATH 설정을 진행하고, source 명령어로 적용시킨다.  
+```bash
+sudo sh -c "echo 'export PATH=$PATH:/usr/local/cuda-11.7/bin'>> /etc/profile"
+sudo sh -c "echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.7/lib64'>> /etc/profile"
+sudo sh -c "echo 'export CUDARDIR=/usr/local/cuda-11.7'>> /etc/profile"
+source /etc/profile
+```
+
+cuda 설치가 완료됐으면, nvcc -V 또는 nvcc –version 을 입력하여 설치됐는지 확인한다.  
+```bash
+nvcc -V
+```
+
+## cuDNN 설치  
+cuDNN 사이트로 이동하고, 버전에 맞는 cuDNN을 다운로드 받는다.  
+[nvidia cudnn](https://developer.nvidia.com/cudnn)  
+```bash  
+tar -xvf cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz
+cd cudnn-linux-x86_64-8.6.0.163_cuda11-archive
+sudo cp include/cudnn* /usr/local/cuda/include
+sudo cp lib/libcudnn* /usr/local/cuda/lib64
+sudo chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
+```
+
+다운로드 받은 cuDNN 압축을 풀고, /usr/local/cuda 디렉토리로 복사한다.  
+```bash
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_adv_train.so.8.6.0 /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_adv_train.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8.6.0  /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_ops_infer.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8.6.0  /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_cnn_train.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8.6.0  /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_adv_infer.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_ops_train.so.8.6.0  /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_ops_train.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8.6.0 /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8
+sudo ln -sf /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn.so.8.6.0 /usr/local/cuda-11.7/targets/x86_64-linux/lib/libcudnn.so.8
+```
+cuda 디렉토리와 실제 설치된 cuda-11.7 디렉토리를 심볼릭 링크 설정해준다.  
+
+```bash  
+sudo ldconfig
+ldconfig -N -v $(sed 's/:/ /' <<< $LD_LIBRARY_PATH) 2>/dev/null | grep libcudnn
+``` 
+cuDNN이 제대로 설정이 됐는지 확인이 되면 끝이다.  
