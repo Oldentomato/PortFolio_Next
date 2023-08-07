@@ -1,0 +1,50 @@
+---
+title: docopt란
+date: 2023-08-07
+description: docopt와 __doc__의 활용법
+tag: [파이썬]
+---  
+
+## docopt란?  
+docopt는 파이썬으로 작성된 명령줄 인터페이스(Command-Line Interface, CLI)를 파싱하고 해석하기 위한 라이브러리이다.  
+사용자가 명령줄에서 입력한 인자들을 쉽게 처리하고, 해당하는 명령어를 쉽게 실행할 수 있도록 도와준다.  
+docopt는 사용자가 인자를 입력할 때 매우 직관적인 방식으로 작성하도록 하여 사용자 친화적인 CLI를 개발할 수 있도록 지원한다.  
+개발자는 명령어의 사용법을 사람이 이해하기 쉬운 텍스트로 정의하고, docopt는 이 텍스트를 기반으로 인자를 파싱하고 실행에 필요한 정보를 추출해준다.  
+
+
+## __doc__란?  
+여기서 __doc__를 사용하게 되는데, __doc__는 파이썬 내장된 속성중 하나로, 클래스나 함수, 모듈 등의 객체에 대한 문서를 나타내는 문자열이다.  
+이 속성은 해당 객체에 대한 독스트링(docstring)이라고도 불리며, 객체를 설명하는데 사용된다.   
+파이썬에서 독스트링은 보통 객체를 정의하는 코드 불록의 첫 번째 문장에 문자열로 작성된다.  
+함수의 경우 함수 정의 바로 아래에 작성하며, 클래스의 경우 클래스 정의 바로 아래에 작성한다.  
+주석과 달리 독스트링은 객체의 __doc__속성으로 접근할 수 있어 프로그램 실행중에도 사용할 수 있다.  
+하지만 우리가 사용하는 __doc__는 전체 프로그램의 인자를 알려주기 위함으므로 맨 위에 작성해준다.  
+
+## 예시  
+```python
+"""Detect vanishing points with the Manhattan assumption.
+Usage:
+    eval_manhattan.py [options] <yaml-config> <checkpoint>
+    eval_manhattan.py ( -h | --help )
+
+Arguments:
+   <yaml-config>                 Path to the yaml hyper-parameter file
+   <checkpoint>                  Path to the checkpoint
+
+Options:
+   -h --help                     Show this screen
+   -d --devices <devices>        Comma seperated GPU devices [default: 0]
+   -o --output <output>          Path to the output AA curve [default: error.npz]
+   --dump <output-dir>           Optionally, save the vanishing points to npz format.
+   --noimshow                    Do not show result
+"""
+
+...
+
+args = docopt(__doc__)
+config_file = args["<yaml-config>"]
+...
+num_gpus = args["--devices"].count(",") + 1
+os.environ["CUDA_VISIBLE_DEVICES"] = args["--devices"]
+...
+```
