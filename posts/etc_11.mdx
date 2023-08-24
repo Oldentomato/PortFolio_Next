@@ -1,0 +1,135 @@
+---
+title: docker환경 재현하기
+date: 2023-08-24
+description: 실험환경을 다시 재현할 방법에대한 설명 
+tag: [docker]
+---  
+
+## 실험 소스코드 다운로드  
+아래 url을 통해 실험한 소스코드들을 다운받을 수 있다.  
+[이동하기](https://github.com/Oldentomato/detect_vp-reconstruction_vid)  
+
+해당 깃허브 레포지토리에는 Ground_Truth txt파일과 DB영상 데이터는 없다.  
+데이터를 받아서 cvpr22, neurVPS 디렉토리에 각각 넣어주어야 한다.  
+
+## 도커 설치  
+아래 순서대로 설치를 진행하면 된다.  
+```bash
+sudo apt update
+
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg |
+sudo apt-key add -
+
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+sudo apt update
+
+sudo apt install docker-ce
+
+sudo systemctl start docker
+```
+
+## 도커 권한 획득  
+이 설정을 해주면 매번 도커명령어를 사용할 때마다 sudo를 사용하지 않아도 된다.  
+```bash
+sudo usermod -aG docker $USER
+
+newgrp docker 
+```
+설정을 해주면 터미널을 다시 켜주어야 한다.  
+
+## nvidia toolkit 설치  
+도커에서 gpu를 사용하기 위해서는 nvidia toolkit 컨테이너가 필요하다.  
+```bash
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)  
+
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -  
+
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list  
+
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit  
+
+sudo systemctl restart docker  
+```
+
+## 도커 실행  
+cvpr22 디렉토리로 들어오면 Dockerfile 과 docker_run.sh 파일이 있다.  
+sh파일을 실행하기 전에 Dockerfile로 들어가서 FROM부분을 수정해주어야 하는데, 자신의 cuda버전과 cudnn버전을 확인하고 수정해주면 된다.  
+### cuda와 cudnn 버전 확인법  
+```bash
+//cuda 
+nvidia-smi
+//cudnn
+sudo ldconfig
+ldconfig -N -v $(sed 's/:/ /' <<< $LD_LIBRARY_PATH) 2>/dev/null | grep libcudnn
+```
+도커 이미지 버전 확인  
+[pytorch 도커허브로 이동](https://hub.docker.com/r/pytorch/pytorch/tags)  
+
+위의 url로 이동하여 버전을 찾고 DockerFile의 FROM부분을 수정해주면 된다.  
+그 뒤, docker login을 통해 로그인을 먼저 진행해주어야한다.  
+로그인에 성공하면 docker_run.sh를 권한을 올려주고 실행하면 된다.  
+```bash
+chmod +x docker_run.sh
+./docker_run.sh
+```
+이 sh 스크립트는 도커파일을 빌드하고 컨테이너 실행과 컨테이너접속까지 한번에 이루어지는 코드이다.  
+처음 한번만 이 스크립트를 실행해주고 다음부터는  
+docker exec -it cvpr /bin/bash  
+이 명령어를 통해 접속하면 된다.  
+### sh스크립트 설명  
+```sh
+docker build --tag vpenv:1.0 . //Dockerfile의 내용에 맞게 빌드를 함 이미지이름은 vpenv 버전은 1.0 이다.
+
+docker run -d -it --name cvpr --gpus all -v .:/data --restart=always vpenv:1.0  //도커 컨테이너를 실행함 컨테이너명은 cvpr이다
+
+docker exec -it cvpr /bin/bash //해당 도커 컨테이너로 접속
+```
+
+### 모델 다운로드  
+모델은 각각 다운받아 각 디렉토리에 넣어주면 된다.  
+cvpr인 경우 직선검출이 된 파라미터도 필요하기때문에 추가로 다운받고 넣어줘야 한다.  
+[모델 다운로드]()  
+
+
+### 소스코드 실행  
+분석코드 실행파일은 video_predict.py 파일이다.  
+실행할 때 데이터셋을 선택해야하는데, python video_predict.py 뒤에 데이터셋이름을 작성하면 된다.(기본값 nyu)
+(ex)python video_predict.py su3
+결과 데이터는 saved_results 디렉토리내에 데이터셋별로 저장이 된다.  
+
+(주의) neurVPS 디렉토리 내에는 Dockerfile이 없다.  
+이유는 cvpr과 neur 환경 둘 다 동일한 환경에서 돌아가는 것이 확인되었기 때문에, 
+만일 첫 실행이라면 cvpr디렉토리에서 docker_run.sh를 한번 실행하고 neurVPS 디렉토리의 docker_run.sh를 실행해주면 된다.
+이 docker_run.sh도 맨처음 한번만 실행하면 되고 다음부터는  
+docker exec -it neur /bin/bash  
+이 명령어만 써도 된다.  
+
+## 추가 도움말  
+### 재부팅 시 docker 서비스가 꺼져있을 경우  
+```bash
+sudo service docker start
+```
+
+### 실험코드 수정  
+이 도커환경은 컨테이너와 호스트 디렉토리와 마운트(연결)되어있기 때문에 호스트에서 직접 코드를 수정해도 바로 적용된다.  
+[볼륨 마운트에대한 설명](https://ok-lab.tistory.com/121)  
+
+
+### 도커 명령어들
+```bash
+docker ps -a //모든 도커 컨테이너 상황을 확인 EXITED: 종료됨, UP: 정상실행, Restarting: 문제가 생겨 재시작중
+docker images //빌드된 이미지들 확인
+docker login //도커 로그인
+
+//docker 컨테이너와 이미지 삭제하기 (모두 삭제를 원할경우 아래를 순서대로 진행할것)
+docker stop <컨테이너명 혹은 컨테이너 ID>
+docker rm <컨테이너명 혹은 컨테이너 ID>
+docker rmi <이미지명:버전 혹은 이미지 ID>
+
+//도커를 빌드했는데 문제가 생겨 다시 빌드할 경우 캐시에 저장된 데이터를 이용해서 다시 빌드하게된다.
+//캐시데이터 없이 새로운 환경으로 재빌드하고 싶으면 다음 명령어로 캐시를 삭제할 수 있다.  
+docker builder prune
+```
