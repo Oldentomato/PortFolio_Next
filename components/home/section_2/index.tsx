@@ -35,7 +35,7 @@ function ExperienceItems() {
         <Experience
           year="2023"
           title="Activites"
-          description="네이버 DEVIEW 참여 <br/>ETRI 연구원 인턴                "
+          description="네이버 DEVIEW 참여 <br/>ETRI 연구 연수생                "
         />
       </section>
     </Container>
