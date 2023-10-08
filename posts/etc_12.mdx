@@ -1,0 +1,56 @@
+---
+title: wsl2와 도커 환경 구성하기
+date: 2023-10-09
+description: 윈도우에서 우분투와 도커 환경을 구축하는 방법 
+tag: [도커, 우분투]
+---  
+
+## wsl2 설치  
+### wsl 활성화  
+Windows PowerShell을 관리자 권한으로 실행한다.  
+그리고 아래 2개의 명령어를 차례대로 입력한다.  
+```bash
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+```
+그 다음, 재부팅을 해준다.  
+
+### wsl2 Linux 커널 업데이트  
+본인 PC의 CPU 아키텍처에 맞춰 설치파일을 다운로드한다.  
+- x64 : [Linux 커널 업데이트 패키지 다운로드 링크](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi)  
+- ARM64 : [Linux 커널 업데이트 패키지 다운로드 링크](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_arm64.msi)
+
+설치가 완료되면 PowerShell에서 아래 명령어를 입력해준다.  
+```bash
+wsl --set-default-version 2
+```
+
+### MS Store에서 Ubuntu 앱 설치  
+시작에서 Microsoft Store를 검색하여 실행한다. 그리고 Ubuntu를 검색하여 설치한 후 실행한다.(필자 기준 20.04버전)  
+만약에 실행 시 "WslRegisterDistribution failed with error: 0xc03a001a" 라고 뜬다면 아래의 방법으로 해결한다.  
+  - 시작 > 실행 > %localappdata%\Packages 입력.
+  - CanonicalGroupLimited.Ubuntu_ 로 검색해서 나오는 폴더를 찾아서 오른쪽 클릭.
+  - 속성 > 일반 > 고급 > "내용을 압축하여 디스크 공간 절약" 의 체크 박스의 체크를 해제.
+  - Ubuntu App 재실행.
+
+### 리눅스 윈도우10 에 설치 (WSL) 시 오류 WslRegisterDistribution failed with error: 0x80370102  
+cpu 가상화를 허용하지 않을 때 나타나는 에러이다.  
+intel과 amd 서로 부르는 명칭이 다르다. intel은 vmx, amd는 svm이라 부른다.  
+필자는 amd cpu이기 때문에 아래 사이트를 참고하였다.  
+[svm 활성화하는 법](https://gbworld.tistory.com/1604)  
+
+
+## docker desktop 설치  
+아래 사이트로 이동하여 다운로드 받는다.  
+[도커 다운로드](https://www.docker.com/products/docker-desktop/)  
+여기서 다운로드를 할 때 Docker Desktop requires the Workstation service to be enabled. 이런 에러가 뜬다면 다음과 같이 진행한다.  
+- window검색 > windows 기능 켜기/끄기 > window 하이퍼바이저 플랫폼 체크
+- window검색 > 서비스 > server더블클릭 > 시작유형을 자동으로 하고 서비스 시작
+- window검색 > 서비스 > workstation더블클릭 > 시작유형을 자동으로 하고 서비스 시작
+
+도커에 들어가게 되면 오른쪽 위에 톱니바퀴로 들어간다.  
+Resources > WSL integration > Enable integration with additional distros 에서 아까 설치한 ubuntu를 활성화해주고 Apply해준다. (없으면 Refresh해본다)  
+그 뒤, 재부팅을 해준다.  
+
+
+
