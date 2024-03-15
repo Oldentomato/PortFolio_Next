@@ -137,6 +137,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181 #주키퍼 포트, 기본 포트로 2181사용
       ZOOKEEPER_TICK_TIME: 2000 #클러스터를 구성할 때 동기화를 위한 기본 틱 타임
 
+
   broker:
     image: confluentinc/cp-kafka:7.0.0
     container_name: broker
@@ -152,6 +153,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 #토픽 복제에 대한 설정 값
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 #트랜젝션 최소 ISR(InSyncReplicas 설정) 수
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 #트렌젝션 상태에서 복제 수
+      KAFKA_HEARTBEAT_INTERVAL_MS: 3000 #리밸런싱으로 인해 세션시간을 늘려야 실패한 소비자로 그룹제거를 하고 재조정할 시간을 벌어준다.
+      KAFKA_SESSION_TIMEOUT_MS: 6000 #리밸런싱으로 인해 세션시간을 늘려야 실패한 소비자로 그룹제거를 하고 재조정할 시간을 벌어준다.
 
   kafdrop:
     image: obsidiandynamics/kafdrop
@@ -168,7 +171,6 @@ services:
 
 #컨테이너들 한번에 삭제
 #docker rm -f $(docker ps -qa)
-      
 ```
 그다음, docker compose up -d 로 컨테이너들을 생성시켜주고 producer.py와 consumer.py를 작성해준다.  
 ### producer.py  
