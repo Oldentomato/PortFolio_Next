@@ -153,7 +153,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 #토픽 복제에 대한 설정 값
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 #트랜젝션 최소 ISR(InSyncReplicas 설정) 수
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 #트렌젝션 상태에서 복제 수
-      KAFKA_HEARTBEAT_INTERVAL_MS: 3000 #리밸런싱으로 인해 세션시간을 늘려야 실패한 소비자로 그룹제거를 하고 재조정할 시간을 벌어준다.
+      KAFKA_HEARTBEAT_INTERVAL_MS: 3000 #컨슈머가 주키퍼에 하트비트를 보내는 주기가 짧아짐 너무 길면 컨슈머가 dead됐다고 인식하고 리밸런싱하게됨
       KAFKA_SESSION_TIMEOUT_MS: 6000 #리밸런싱으로 인해 세션시간을 늘려야 실패한 소비자로 그룹제거를 하고 재조정할 시간을 벌어준다.
 
   kafdrop:
