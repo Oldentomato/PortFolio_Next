@@ -45,7 +45,7 @@ MQ의 장점은 다음과 같다.
 - 보장성: MQ에 들어간다면 결국 모든 메시지가 consumer서비스에게 전달된다는 보장을 제공한다.
 
 이 부분을 쉽게 이해하기 위해 유튜브시스템에 비유해서 설명하겠다.  
-[img4](https://velog.velcdn.com/images/holicme7/post/c471b327-67fd-43e1-b462-9e38c530d7b7/image.png)  
+![img4](https://velog.velcdn.com/images/holicme7/post/c471b327-67fd-43e1-b462-9e38c530d7b7/image.png)  
 다음과 같이 Publisher,Channel(Topic),Subscriber가 있다.  
 각각 유튜버, 유튜브알림시스템, 시청자(구독자)로 가정하겠다.  
 우선 시청자는 자신이 좋아하는 유튜버의 영상을 매번 챙겨보기 위해 유튜버를 구독하게 된다.  
@@ -57,7 +57,7 @@ MQ의 장점은 다음과 같다.
 지금은 토픽이 알림시스템 밖에 없지만 상황에 따라 다른 시스템(topic)을 추가할 수도 있다.  
 
 ## 카프카 구성 요소 및 특징  
-[img4](https://velog.velcdn.com/images/holicme7/post/808267c3-0104-4e5e-bf9b-24f994994cee/image.png)  
+![img5](https://velog.velcdn.com/images/holicme7/post/808267c3-0104-4e5e-bf9b-24f994994cee/image.png)  
 ### Topic  
 - 각각의 메시지를 목적에 맞게 구분할 때 사용한다.
 - 메시지를 전송하거나 소비할 때 Topic을 반드시 입력한다.
@@ -107,7 +107,7 @@ MQ의 장점은 다음과 같다.
 
 ## 주요 설계 특징  
 ### 왜 하나의 topic을 여러개의 partition으로 분산시키는가?  
-![img5](https://velog.velcdn.com/images/holicme7/post/3d67bf86-ce22-40f4-8298-0a131290d2cb/image.png)  
+![img6](https://velog.velcdn.com/images/holicme7/post/3d67bf86-ce22-40f4-8298-0a131290d2cb/image.png)  
 - 병렬로 처리하기 위해 분산 저장을 한다.
 - 카프카의 토픽에 메세지가 쓰여지는 것도 어느정도 시간이 소비된다.
 - 몇 천건의 메세지가 동시에 카프카에 write되면 병목현상이 발생할 수 있다.
@@ -116,7 +116,7 @@ MQ의 장점은 다음과 같다.
 - 파티션을 늘렸을 때 메세지는 Round-Robin 방식으로 쓰여진다.  따라서 하나의 파티션 내에서는 메세지 순서가 보장되지만, 파티션이 여러개일 경우에는 순서가 보장되지 않는다.
 
 ### 컨슈머 그룹은 왜 존재할까?  
-![img6](https://velog.velcdn.com/images/holicme7/post/fa1a43d0-eeb2-4669-905e-4780fcaf7ddb/image.png)  
+![img7](https://velog.velcdn.com/images/holicme7/post/fa1a43d0-eeb2-4669-905e-4780fcaf7ddb/image.png)  
 - consumer의 묶음을 consumer group이라고 한다.
 - 컨슈머 그룹은 하나의 topic에 대한 책임을 갖고 있다.
 - 즉, 어떤 컨슈머가 down된다면, 파티션 재조정(리밸런싱)을 통해 다른 컨슈머가 해당 파티션의 sub을 맡아서 한다. offset 정보를 그룹간에 공유하고 있기 때문에 down되기 전 마지막으로 읽었던 메시지 위치부터 시작한다.
