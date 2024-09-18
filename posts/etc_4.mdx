@@ -38,11 +38,13 @@ echo "SELECT user, authentication_string, plugin, host
       | sudo mysql -t -u root
 ```
 출력에는 localhost에서 연결하는 root 사용자가 auth_socket 플러그인을 사용하는 것으로 표시됨  
+```bash
 +------+-----------------------+-------------+-----------+
 | user | authentication_string | plugin      | host      |
 +------+-----------------------+-------------+-----------+
 | root |                       | auth_socket | localhost |
 +------+-----------------------+-------------+-----------+  
+```
 4. 이 설정을 변경하고 루트 비밀번호를 추측하기 어려운 비밀번호로 변경.  
 ```bash
 export PASSWORD=`uuidgen`; echo "Root password is : $PASSWORD"
