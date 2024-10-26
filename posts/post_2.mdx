@@ -16,7 +16,11 @@ rm -rf ~/.docker/config.json
 서버를 구성하는데, 보장성을 위해서 DHCP에서 수동으로 IP를 고정시켰다. 그러면서 도커에서 문제가 발생했는데,  
 docker swarm에서 이미지를 잘 못불러온 것이다.  
 docker stack ... 으로 서비스를 생성하면 컨테이너는 생겼지만 up상태가 되지 않는데,  
-여기서 docker service ps <service-name> --no-trunc 를 하면 에러내역을 확인할 수 있다.  
+여기서  
+```bash
+docker service ps <service-name> --no-trunc 
+```
+를 하면 에러내역을 확인할 수 있다.  
 (여기서 --no-trunc는 잘려진 내용들도 모두 보이도록 하는 옵션이다)  
 에러는 no such image... 로 이미지가 다운받아져 있음에도 이미지를 찾지 못하고 있던 것이었다.  
 DHCP에서는 IP, 서브넷마스크, DNS 등 여러가지를 자동으로 설정해주지만, 고정IP로 바꾸면 이를 수동으로 하나하나 설정해주어야한다.  
