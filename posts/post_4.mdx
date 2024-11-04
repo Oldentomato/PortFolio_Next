@@ -1,0 +1,41 @@
+---
+title: 젠킨스와 도커
+date: 2024-11-04
+description: 젠킨스 내 도커를 이용하는 방법
+tag: [도커]
+---
+
+## 젠킨스에서 도커를 사용하기  
+젠킨스 파이프라인을 작성하는데, 도커를 로그인하고 이미지를 빌드하고 푸쉬까지 하는 작업이 필요하다.  
+젠킨스에서 도커를 사용하려면 단순히 컨테이너에서 volume을 도커소켓 디렉토리에 bind하면 해결이 되긴 한다.  
+하지만 현재 프로젝트 구조는 보안을 위해 도커소켓프록시를 이용해서 tcp간 통신으로만 이루어져야 한다.  
+
+젠킨스 도커 컴포즈에서 도커 tcp연결을 하기 위해서는 다음 내용을 작성하면 된다.  
+```yaml
+environment:
+      - DOCKER_HOST=tcp://<network name>:2375
+```
+하지만 위처럼 설정을 해도 젠킨스 내에서 docker 를 입력하면 command not found 메시지가 뜨게 된다.  
+어느 블로그에서 이러한 경우에는 젠킨스 내부에도 도커를 설치해야 한다는데, docker daemon이 아니라 docker cli만 설치하면 된다고 한다.  
+[참고 블로그](https://postlude.github.io/2020/12/26/docker-in-docker/)  
+apt-get 이용하여 설치하면 되지만 현재 환경은 docker-compose 이기에 RUN명령어는 작성할 수 없다.  
+게다가 docker swarm이기 때문에 docker compose에서 Dockerfile을 불러오는 것 또한 불가능하다.  
+그러기에 Dockerfile을 작성하고 미리 이미지를 빌드한 다음 docker compose에서 이미지를 가져와야 한다.  
+Dockerfile은 다음과 같이 수정한다.  
+```Dockerfile
+FROM jenkins/jenkins:jdk17
+
+USER root 
+# 필수 패키지 설치
+RUN apt-get update 
+ENV DOCKER_VERSION=27.2.0
+RUN curl -sfL -o docker.tgz "https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKER_VERSION}.tgz" && \
+    tar -xzf docker.tgz --directory /usr/local/bin docker/docker --strip=1 && \
+    rm docker.tgz 
+    
+#sudo docker build -t customjenkins:1.0 ./jenkins-dockerfile
+```
+현재 서버컴퓨터가 m1이기에 aarch64로 받아온다.  
+위 내용은 스택오버플로우에서 참고했다.  
+[참고](https://stackoverflow.com/questions/55317195/run-command-from-one-container-to-another/55317547#55317547)  
+그 다음, docker swarm에 stack하면 정상적으로 젠킨스에서 도커 명령어를 사용할 수 있다.  
