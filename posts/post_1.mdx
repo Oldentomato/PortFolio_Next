@@ -71,7 +71,7 @@ Kubernetes만큼 기능이 많지는 않지만 기본적인 구성을 갖출 수
 ![img3](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/post_1/img_3.png?raw=true)  
 - Portainer와 Mongo Express를 이용하여 컨테이너 환경과 DB구성을 웹으로 확인할 수 있게 구성함
 
-## Docker Swarm, traefik 구성  
+## Docker Swarm 네트워크 구성  
 ```bash 
 # ingress 네트워크 삭제 후 재생성
 docker network rm ingress
@@ -104,6 +104,8 @@ docker network create --ingress --driver overlay \
 위 명령어에서 Docker 네트워크에 연결된 컨테이너들이 10.10.0.0부터 10.10.255.255까지의 IP 주소 범위 내에서 IP를 할당받게 만든다.  
  /16은 서브넷 마스크를 나타내며, 이를 통해 IP 주소 범위를 정의한다.  
 
+
+## TLS 설정  
  TLS설정을 위한 파일의 내용은 다음과 같다.  
  dynamic_conf.toml
  ```toml 
@@ -127,10 +129,16 @@ docker network create --ingress --driver overlay \
 위 코드는 traefik에서 https로 연결할 때 보안 강도를 조절하는 코드이다.  
 tls의 버전을 몇으로 사용할 것인지, 암호화방식은 어떤방식으로 할지를 설정하는 코드이다.  
 
+## 로드밸런싱 구조  
+로드밸런서는 L4,L7을 같이 사용하였다. 자세한 내용은 다음 포스트에 작성했다.  
+[로드밸런싱 구현 정리](https://wsportfolio.vercel.app/blog/post_5)  
+
 ## 젠킨스로 자동 서버 배포  
 ![img4](https://github.com/Oldentomato/PortFolio_Next/blob/main/postsimg/post_1/img_4.png?raw=true)  
 위의 구조대로 젠킨스가 작동되도록 설계했다.  
 개발환경 code-server에서 git push를 할 경우 위 프로세스가 진행되어 무중단 배포를 구현했다.  
+그리고 젠킨스 내부에서 도커를 활용할 때 추가로 작업해야할 것이 있다. 그 내용은 다음 포스트에 있다.  
+[젠킨스와 도커](https://wsportfolio.vercel.app/blog/post_4)  
 
 ## CodeArchive  
 tomatoAgent의 기능 중 하나로, openAI를 활용한 도구이다.  
