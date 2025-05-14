@@ -1,0 +1,57 @@
+---
+title: CORS에 대해
+date: 2025-05-14
+description: CORS의 개념과 Preflight request에 대한 설명
+tag: [CS]
+---  
+
+## CORS란?  
+CORS는 Cross-Origin Resource Sharing의 줄임말로, 직역하면 교차 출처 리소스 공유라는 뜻이다.  
+CORS는 다른 출처에 리소스를 요청할 때 지켜야하는 정책이다. 여기서 출처(Origin)은 url에서 Protocol, Host, Port 까지를 의미한다.  
+![img](https://velog.velcdn.com/images/wjdwl002/post/0955e8bf-45d5-4e82-8a97-d4084a173a5d/image.png)  
+Cross-Domain 환경에서는 CORS정책으로 인증이나 쿠키같은 민감한 정보의 교환이 까다롭다.  
+
+## CORS의 동작원리  
+CORS의 동작원리는 크게 세가지로 되어있다.  
+- 단순 요청 보내기 (Simple Request) 
+- 예비 요청을 보내서 확인하기 (Preflight)  
+- 인증된 요청을 사용하는 방식 (Credential Request)  
+
+### Simple Request  
+말 그대로 단순히 요청을 보내는 방법인데, 예비요청 없이 서버에 바로 요청을 보내는 방법이다.  
+서버에 바로 본요청을 보낸 뒤, 서버는 헤더에 Access-Control-Allow-Origin 값 등등을 붙여서 보내주면 브라우저가 CORS정책 위반 여부를 검사한다.  
+![img2](https://velog.velcdn.com/images/wjdwl002/post/08b13b66-f574-43c3-b512-d6f81b9ac039/image.png)  
+### 요청 조건  
+- GET, HEAD 요청  
+- Content-Type 헤더가 다음과 같은 POST 요청  
+  - application/x-www-form-urlencoded
+  - multipart/form-data
+  - text/plain
+- Accept, Accept-Language, Content-Language, Content-Type, DPR, Downlink, Save-Data, Viewport-Width, Width 를 제외한 헤더를 사용하면 안된다.  '
+
+사진 파일 업로드(multipart/form-data)가 아닌이상, 대체로 application/json을 사용하기 때문에 대부분 Preflight방식으로 처리한다.  
+
+### Preflight Request  
+서버로 바로 요청을 보내는 Simple Request와는 다르게, 지금 보내는 요청이 유효한지를 확인하기 위해 OPTIONS 메서드로 예비 요청을 보내는 것이다.  
+만일 유효하지 않은 요청을 할 경우, 불필요한 리소스를 낭비할 수 있기 때문에 이를 방지하기 위해 특정 조건인 경우 예비요청을 먼저 날려 유효한 요청인지 확인하는 것이다.  
+추가로 native 앱에서의 요청에서는 Preflight Request를 사용하지 않는다.  
+![img3](https://velog.velcdn.com/images/wjdwl002/post/513e46a0-5ce9-497a-b6fd-65efb64f76b5/image.png)  
+
+### 요청 조건  
+- Content-Type이 다음과 같은 GET, HEAD, POST 요청
+  - application/x-www-form-urlencoded 
+  - multipart/form-data
+  - text/plain
+- 요청에 사용된 XMLHttpRequest.upload 객체에 이벤트 리스너가 등록되어 있지 않을 때
+- ReadableStream 객체가 요청에서 사용되지 않을 때  
+
+### Credential Request  
+마지막으로 인증된 요청을 사용하는 방법이다. 이것은 CORS의 기본적인 방식이라기보단 다른 출처 간 통신에서 좀 더 보안을 강화하고 싶을 때 사용하는 방법이다.  
+기본적으로 브라우저가 제공하는 비동기 리소스 요청 API인 XMLHttpRequest 객체나 fetch API는 별도의 옵션 없이 브라우저의 쿠키 정보나 인증과 관련된 헤더를 함부로 요청에 담지 않는다.  
+이때 요청에 인증과 관련된 정보를 담을 수 있게 해주는 옵션이 바로 credentials 옵션이다.  
+이 옵션은 총 3가지 값을 사용할 수 있다.  
+- same-origin (기본값) : 같은 출처 간 요청에만 인증 정보를 담는다.
+- include : 모든 요청에 인증 정보를 담는다.
+- omit : 모든 요청에 인증 정보를 담지 않는다.  
+
+same-origin이나 include와 같은 옵션을 사용하여 리소스 요청에 인증 정보가 포함된다면, 브라우저는 단순히 Access-Control-Allow-Origin만 확인하는 것이 아니라 좀더 엄격하게 검사하게 된다.  
