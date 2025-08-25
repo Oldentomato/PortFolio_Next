@@ -27,13 +27,55 @@ ArgoCD는 애플리케이션을 배포를 위해 Declarative Application Managem
 ![img1](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FKVvgd%2FbtsfaKnE1V3%2FAAAAAAAAAAAAAAAAAAAAACUqE9_VK-KuZ7dke2AgQPpmGokeGfGXEmjqi_mlgObS%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1756652399%26allow_ip%3D%26allow_referer%3D%26signature%3DOsp4Do6%252FgxoEhh8NPvs14k10Jf8%253D)  
 1. 사용자가 Git 저장소에 Push한다. 이때 k8s에 배포 방식인 Helm 또는 kustomize를 사용하기 때문에 해당 배포 방식의 구조로 Git 저장소에 Push한다.  
 2. ArgoCD는 Git저장소에 변경 상태를 감지한다.  
-3. 변경된 내용을 k8s에 배포하여 반영한다.  
+3. 변경된 내용을 k8s에 배포하여 반영한다.   
+
 [참고](https://wlsdn3004.tistory.com/37)  
 위 방법이 가장 기본적인 방법이지만 현재 프로젝트는 각자의 개발파트가 여러개 있기 때문에 GitOps를 중앙관리형식으로 구성한다.  
 자세한 내용은 아래에 다룬다.  
 
 ## 구현하기  
-위 내용대로 현재 프로젝트는 Spring서버, 파이썬서버, 스케줄링 서버 등 여러 서버가 있고 각자 레포지토리에서 작업을 진행하고 있다.  
+AWS EKS 상에 ArgoCD를 설치해야한다. 설치 sh스크립트는 다음과 같다.  
+```bash
+#!/bin/bash  
+
+set -e  
+
+helm repo add argo https://argoproj.github.io/argo-helm
+
+helm install argocd argo/argo-cd -n dev-system --set server.service.type=ClusterIP
+
+#비번 조회
+#kubectl -n dev-system get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# kubectl port-forward service/argocd-server -n dev-system 8081:443
+```
+설치가 완료되면 다음 내용을 이용하여 kubectl apply를 해준다.  
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: backend-services
+  namespace: dev-system
+  # Finalizer that ensures that project is not deleted until it is not referenced by any application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Project SOS
+
+  sourceRepos:
+    - <GitOps Repository>
+
+  destinations:
+    - namespace: '*'
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+```
+이제 ArgoCD는 해당 GitOps Repository를 감지하게 된다.  
+
+현재 프로젝트는 Spring서버, 파이썬서버, 스케줄링 서버 등 여러 서버가 있고 각자 레포지토리에서 작업을 진행하고 있다.  
 필자를 인프라를 담당하고 있었고 각자 CI/CD에 크게 집중하지 않게 진행하려면, GitOps레포지토리를 따로 만들고 여기서 버전관리를 하는것이 낫다고 판단했다.  
 구성도는 다음과 같다.  
 ![img2](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FcxMc2n%2FbtsAmDpqYvZ%2FAAAAAAAAAAAAAAAAAAAAAK-Y0-ODAaqAQJLVIAZpwCM3A7LOoz6cWqotPtMaeBWp%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1756652399%26allow_ip%3D%26allow_referer%3D%26signature%3Dg9EUDQ4skhymV8MELYwKGeEprpA%253D)  
